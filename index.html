@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Évaluation d'Habilitation HT/THT - STOS Sonelgaz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap'); 
+        
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .font-arabic { font-family: 'Tajawal', sans-serif; }
+        .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .radio-custom:checked + label { background-color: #eff6ff; border-color: #0072ce; box-shadow: 0 4px 6px -1px rgba(0, 114, 206, 0.1); }
+        .radio-custom:checked + label .radio-circle { border-color: #0072ce; background-color: #0072ce; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px;}
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        
+        .bg-sonelgaz-blue { background-color: #0072ce; }
+        .text-sonelgaz-blue { color: #0072ce; }
+        .border-sonelgaz-blue { border-color: #0072ce; }
+        .bg-sonelgaz-orange { background-color: #f39200; }
+        .text-sonelgaz-orange { color: #f39200; }
+        .border-sonelgaz-orange { border-color: #f39200; }
+        
+        .tab-active { border-bottom: 3px solid #0072ce; color: #0072ce; font-weight: 700; }
+        .tab-inactive { border-bottom: 3px solid transparent; color: #64748b; font-weight: 500; }
+
+        .ai-report h3 { color: #0072ce; font-size: 1.25rem; font-weight: 800; margin-top: 1.5rem; margin-bottom: 0.75rem; border-bottom: 2px solid #e2e8f0; padding-bottom: 0.5rem; }
+        .ai-report p { margin-bottom: 1rem; line-height: 1.6; }
+        .ai-report ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .ai-report li { margin-bottom: 0.5rem; }
+        .ai-report strong { color: #1e293b; }
+
+        /* Style Webcam */
+        #webcam-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 200px;
+            height: 150px;
+            background: #000;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            border: 3px solid #f39200;
+            overflow: hidden;
+            z-index: 50;
+            display: none;
+        }
+        #webcam-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Effet miroir */
+        }
+        .recording-dot {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 10px;
+            height: 10px;
+            background-color: #ef4444;
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+        .webcam-label {
+            position: absolute;
+            bottom: 4px;
+            left: 8px;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+        }
+    </style>
+</head>
+<body class="text-gray-800 antialiased min-h-screen flex flex-col selection:bg-sonelgaz-orange selection:text-white relative">
+
+    <!-- CHRONOMÈTRE GLOBAL -->
+    <div id="global-timer" class="hidden fixed top-2 right-2 sm:top-5 sm:right-5 z-50 bg-red-600 text-white font-mono font-bold text-lg sm:text-2xl px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-2xl border-4 border-white flex items-center gap-3">
+        <i class="fas fa-stopwatch animate-pulse"></i>
+        <span id="timer-display">01:00:00</span>
+    </div>
+
+    <!-- WEBCAM CONTAINER (VISIO) -->
+    <div id="webcam-container">
+        <video id="webcam-video" autoplay muted playsinline></video>
+        <div class="recording-dot"></div>
+        <div class="webcam-label"><i class="fas fa-video"></i> Surveillance Admin</div>
+    </div>
+
+    <header class="bg-white border-b-4 border-sonelgaz-blue shadow-sm py-3 px-4 sm:px-6 flex justify-between items-center sticky top-0 z-30">
+        <div class="flex items-center gap-3 sm:gap-5">
+            <div id="logo-container" class="relative shrink-0 flex items-center justify-center bg-white rounded-lg shadow-sm border border-slate-100 h-12 w-12 sm:h-16 sm:w-16 overflow-hidden">
+                <img src="logo.png" alt="Sonelgaz Logo" class="w-full h-full object-contain z-10" id="main-logo" onerror="document.getElementById('main-logo').style.display='none'; document.getElementById('svg-logo').style.display='block';">
+                <svg id="svg-logo" style="display:none;" viewBox="0 0 100 100" class="w-full h-full rounded">
+                    <rect width="100" height="100" fill="#f39200"/>
+                    <path d="M 20 60 L 45 20 L 60 20 L 40 50 L 75 50 L 50 85 L 65 85 L 85 45 L 80 40 L 50 40 Z" fill="#0072ce"/>
+                    <circle cx="60" cy="25" r="7" fill="#0072ce"/>
+                    <circle cx="80" cy="25" r="7" fill="#0072ce"/>
+                </svg>
+            </div>
+            
+            <div class="flex flex-col justify-center">
+                <span class="text-sonelgaz-blue font-bold text-sm sm:text-lg md:text-xl font-arabic leading-tight tracking-wide">
+                    منصة تجريبية لعمال سونلغاز نقل الكهرباء و مسير المنظومة (اعداد حاكمي عبد الكريم)
+                </span>
+                <span class="text-sonelgaz-blue font-semibold text-[10px] sm:text-xs md:text-sm mt-0.5 leading-tight">
+                    Plateforme Test d'Habilitation Sonelgaz STOS (par M. Hakmi Abdelkrim)
+                </span>
+            </div>
+        </div>
+        
+        <button onclick="window.showAdminLogin()" class="ml-4 text-slate-400 hover:text-sonelgaz-blue transition flex flex-col items-center shrink-0 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200">
+            <i class="fas fa-lock text-lg"></i>
+            <span class="text-[10px] font-bold mt-1 tracking-widest">ADMIN</span>
+        </button>
+    </header>
+
+    <main id="app-container" class="flex-grow flex items-center justify-center p-4 sm:p-6 w-full max-w-6xl mx-auto">
+        <!-- Contenu dynamique injecté par JavaScript -->
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs sm:text-sm text-gray-500 font-medium">
+        &copy; 2026 - Plateforme d'Évaluation Pédagogique - STOS Sonelgaz | Données sécurisées
+    </footer>
+
+    <script>
+        const districts = ["ORAN", "MOSTAGANEM", "SIDI BELABES", "TIARET", "MASCARA", "TLEMCEN", "AIN TEMOUCHENT"];
+        const services = ["Exploitation", "Contrôle électrique", "Maintenance Poste", "Maintenance Ligne (ML)", "CE ESSAIS/ANALYSES"];
+        
+        // -------------------------------------------------------------------------
+        // 1. BASE DE DONNÉES : EXPLOITATION (Standards)
+        // -------------------------------------------------------------------------
+        const poolExploitation = [
+            { theme: "Procédure & OT", type: "Épreuve Écrite", question: "Une équipe se présente pour une intervention urgente. Le Chef de Travaux (CDT) n'a pas d'Ordre de Travail (OT). Que doit faire le CC ?", options: ["L'accepter avec accord verbal.", "Rédiger l'OT.", "Refuser toute consignation jusqu'à présentation de l'OT.", "Délivrer l'AT sous condition."], correctIndex: 2, justification: "L'OT est le document juridique de base." },
+            { theme: "Faute d'Exploitation", type: "Épreuve Écrite", question: "Suite à une surcharge, le CC effectue un transfert de charge sans le Dispatching. Qualification ?", options: ["Initiative proactive.", "Routine.", "Faute grave d'exploitation.", "Toléré de jour."], correctIndex: 2, justification: "Seul le Dispatching a l'autorité sur la topologie." },
+            { theme: "Communication", type: "Épreuve Écrite", question: "Le Dispatching ordonne l'ouverture. Le CDP répond : « D'accord j'ouvre ». Règle manquante ?", options: ["Dire Terminé.", "Le message collationné.", "L'envoi d'un fax.", "Aucune."], correctIndex: 1, justification: "Le collationnement est obligatoire." },
+            { theme: "Habilitation", type: "Épreuve Écrite", question: "Un agent 'HC' peut-il réparer un disjoncteur ?", options: ["Oui.", "Oui s'il est seul.", "Non, il faut H2.", "Oui avec gants."], correctIndex: 2, justification: "HC = Consignation, H2 = Travaux." },
+            { theme: "Manœuvres", type: "Épreuve Écrite", question: "Ouvrir un sectionneur de mémoire sans cocher la fiche ?", options: ["Oubli administratif.", "Sectionneur défectueux.", "Faute grave de suivi pas-à-pas.", "Toléré."], correctIndex: 2, justification: "Le travail de mémoire cause les fausses manœuvres." },
+            { theme: "Règles d'Or", type: "Simulation", question: "Le CDT a l'AT et dit à son équipe de monter sur le pylône. Erreur ?", options: ["Météo non vue.", "Oubli de la VAT et des MALT locales.", "Pas de casque.", "Aucune."], correctIndex: 1, justification: "La VAT et les terres de chantier sont la responsabilité du CDT." },
+            { theme: "Alarme SF6", type: "Simulation", question: "Disjoncteur 400kV - Alarme SF6 2ème Stade (Lockout). Un défaut survient.", options: ["Ouvrir manuellement.", "Forcer la commande.", "Isoler via les disjoncteurs adjacents (50BF).", "Fermer les terres."], correctIndex: 2, justification: "Le disjoncteur est verrouillé pour éviter l'explosion." },
+            { theme: "Transformateur", type: "Simulation", question: "Température huile Transfo Très Haute. Ventilateurs à l'arrêt. Action ?", options: ["Arroser d'eau.", "Demander un délestage immédiat au Dispatching.", "Régleur au min.", "Couper le neutre."], correctIndex: 1, justification: "Sans ventilation, il faut réduire la charge." },
+            { theme: "Incendie", type: "Simulation", question: "Feu sur transformateur. Gicleurs inopérants. 1ère action ?", options: ["Extincteur.", "S'assurer par VAT qu'il est HORS TENSION avant la lutte.", "Attendre.", "Mettre du sable."], correctIndex: 1, justification: "Ne jamais projeter d'eau sous tension." },
+            { theme: "VCC", type: "Simulation", question: "Perte totale du courant continu 127 VCC au poste. Risque ?", options: ["Perte d'éclairage.", "Perte totale du contrôle-commande et protections. Risque d'explosion du poste sur défaut réseau.", "Perte du téléphone.", "Perte de la climatisation."], correctIndex: 1, justification: "Le VCC alimente les relais et les bobines d'ouverture." }
+        ];
+
+        // -------------------------------------------------------------------------
+        // 2. BASE DE DONNÉES : CONTRÔLE ÉLECTRIQUE
+        // -------------------------------------------------------------------------
+        const poolControle = [
+            { theme: "Relais Buchholz", type: "Épreuve Écrite", question: "Rôle principal du relais Buchholz (63) ?", options: ["Protéger des surcharges thermiques.", "Détecter les défauts internes (gaz ou mouvement d'huile).", "Régler la tension.", "Mesurer le courant court-circuit."], correctIndex: 1, justification: "Détecte les arcs internes." },
+            { theme: "Relais Lockout (86)", type: "Épreuve Écrite", question: "Fonction du relais ANSI 86 ?", options: ["Réenclencheur.", "Bloquer la fermeture du disjoncteur jusqu'à réarmement manuel.", "Régulateur.", "Relais SCADA."], correctIndex: 1, justification: "Empêche la remise sous tension accidentelle." },
+            { theme: "Inrush Current", type: "Épreuve Écrite", question: "Qui provoque le déclenchement intempestif du relais différentiel (87T) à la mise sous tension ?", options: ["Le courant d'enclenchement magnétisant (Inrush).", "Le régleur.", "La surtension.", "Le relais de terre."], correctIndex: 0, justification: "Courant asymétrique lu comme un défaut interne." },
+            { theme: "Distance (21)", type: "Épreuve Écrite", question: "Qu'est-ce que l'Over-reach en protection de distance ?", options: ["Refus de déclencher.", "Déclenchement à tort pour un défaut hors zone (ex: ligne adjacente).", "Augmentation de tension.", "Perte de CPL."], correctIndex: 1, justification: "Erreur de mesure d'impédance." },
+            { theme: "50BF", type: "Simulation", question: "Rôle de la protection 50BF ?", options: ["Refermer la ligne.", "Mesurer l'usure.", "Si le disjoncteur refuse de s'ouvrir, elle déclenche tous les disjoncteurs du jeu de barres.", "Détecter le gaz."], correctIndex: 2, justification: "Protection de secours ultime." },
+            { theme: "Directionnel (67)", type: "Épreuve Écrite", question: "Pourquoi utiliser une protection directionnelle (67) ?", options: ["Mesurer la puissance.", "Déclencher uniquement si le courant de défaut va vers la zone protégée (sélectivité).", "Réduire le coût.", "Inverser le sens."], correctIndex: 1, justification: "Garantit que seul le relais concerné déclenche dans un réseau bouclé." },
+            { theme: "Discordance de Pôles (52)", type: "Simulation", question: "Un pôle fermé, deux ouverts sur un disjoncteur. Que se passe-t-il ?", options: ["Rien.", "Le relais 52D détecte l'asymétrie et force l'ouverture tripolaire.", "Explosion.", "Blocage."], correctIndex: 1, justification: "Évite les courants homopolaires destructeurs." },
+            { theme: "Synchronisme (25)", type: "Épreuve Écrite", question: "Le relais de synchronisme (25) contrôle :", options: ["Pression et température.", "La tension, la fréquence et l'angle de déphasage.", "L'usure.", "Le vent."], correctIndex: 1, justification: "Évite le couplage asynchrone destructeur." },
+            { theme: "Puissance Inverse (32)", type: "Simulation", question: "Sur un alternateur, que protège le relais ANSI 32 ?", options: ["Contre les court-circuits.", "Empêche l'alternateur de fonctionner en moteur s'il perd sa turbine.", "Accélère la turbine.", "Régule l'excitation."], correctIndex: 1, justification: "Absorbe de la puissance active si la force motrice disparaît." },
+            { theme: "IEC 61850", type: "Épreuve Écrite", question: "Quel est l'avantage du message GOOSE en IEC 61850 ?", options: ["C'est un antivirus.", "Un message réseau ultra-rapide remplaçant les câbles de cuivre pour les ordres de déclenchement.", "Une alarme sonore.", "Un test de SF6."], correctIndex: 1, justification: "Communication de poste à poste ultra rapide." }
+        ];
+
+        // -------------------------------------------------------------------------
+        // 3. BASE DE DONNÉES : MAINTENANCE POSTE
+        // -------------------------------------------------------------------------
+        const poolMaintenance = [
+            { theme: "Huile Diélectrique", type: "Simulation", question: "Distance standard entre les électrodes lors du test de claquage de l'huile (IEC 156) ?", options: ["10 mm.", "2.5 mm.", "5 cm.", "1 mm."], correctIndex: 1, justification: "Norme IEC stricte." },
+            { theme: "Analyse DGA", type: "Épreuve Écrite", question: "La présence d'Acétylène (C2H2) dans l'huile indique :", options: ["Chauffe du papier.", "Décharges partielles.", "Un arc électrique de haute énergie interne.", "Oxydation."], correctIndex: 2, justification: "C2H2 se forme à très haute température (Arc)." },
+            { theme: "Silicagel", type: "Simulation", question: "Les granulés de Silicagel sont roses/transparents. Que faire ?", options: ["Ajouter de l'eau.", "Ne rien faire.", "Les remplacer/régénérer car ils sont saturés en humidité.", "Dégazer le Buchholz."], correctIndex: 2, justification: "Protège l'huile de l'humidité de l'air." },
+            { theme: "Résistance de Contact", type: "Simulation", question: "Test au Micro-ohmmètre d'un disjoncteur = 450 µΩ (limite 50 µΩ). Risque ?", options: ["Fuite SF6.", "Point chaud extrême et incendie au passage du courant nominal.", "Moteur grillé.", "Aucun."], correctIndex: 1, justification: "Loi de Joule P=RI²." },
+            { theme: "Tension de Pas", type: "Épreuve Écrite", question: "Qu'est-ce que la Tension de Pas ?", options: ["Tension poteau-terre.", "Différence de potentiel dangereuse entre les deux pieds d'une personne marchant près d'un défaut à la terre.", "Tension nominale.", "Tension de batterie."], correctIndex: 1, justification: "Écoulement du courant dans le sol." },
+            { theme: "Gravier", type: "Simulation", question: "Pourquoi mettre du gravier dans le poste ?", options: ["Esthétique.", "Augmenter la résistivité du sol et réduire la tension de pas/contact pour le personnel.", "Absorber l'huile.", "Éviter le gel."], correctIndex: 1, justification: "Le gravier sec est très isolant." },
+            { theme: "Batteries", type: "Épreuve Écrite", question: "Pourquoi utiliser des batteries 110V/220V DC en contrôle-commande ?", options: ["Plus économique.", "Alimenter les protections et disjoncteurs même lors d'un black-out total AC (Sécurité absolue).", "Pour le SCADA.", "Pour les PC."], correctIndex: 1, justification: "Ultimate Backup du poste." },
+            { theme: "Anti-Incendie", type: "Épreuve Écrite", question: "Gaz utilisé dans les salles de contrôle/relais ?", options: ["Eau.", "CO2 ou FM-200 (étouffe sans détruire l'électronique).", "Poudre ABC.", "Azote liquide."], correctIndex: 1, justification: "L'eau détruit l'électronique." },
+            { theme: "Climatisation", type: "Épreuve Écrite", question: "Pourquoi la climatisation est vitale en salle relais ?", options: ["Confort.", "Empêcher la poussière.", "Les relais numériques grillent vite au-dessus de 40°C, entraînant la perte de contrôle.", "L'humidité."], correctIndex: 2, justification: "L'électronique IED nécessite un refroidissement continu." },
+            { theme: "SFRA", type: "Épreuve Écrite", question: "Que détecte le test SFRA sur un transfo ?", options: ["Acidité.", "Déformations mécaniques des bobines suite à un court-circuit ou choc.", "Micro-fuites.", "Température."], correctIndex: 1, justification: "Analyse de la réponse en fréquence (Empreinte RLC)." }
+        ];
+
+        // -------------------------------------------------------------------------
+        // 4. BASE DE DONNÉES : MAINTENANCE LIGNE (ML)
+        // -------------------------------------------------------------------------
+        const poolMaintenanceLigne = [
+            { theme: "Sécurité Téléphone", type: "Simulation", question: "Pourquoi le smartphone est-il interdit pendant les manœuvres (VAT, consignation) ?", options: ["Interférence radio.", "L'inattention fait oublier des étapes vitales (VAT, distances), menant à l'arc mortel.", "Ordre du chef.", "Batterie."], correctIndex: 1, justification: "Distraction = Danger de mort en THT." },
+            { theme: "Point Mort", type: "Simulation", question: "Qu'est-ce que le 'Point Mort' en ascension de pylône ?", options: ["Pause.", "Se retrouver à 0% connecté (longes détachées) pour franchir un obstacle (Faute éliminatoire).", "Lâcher les outils.", "Ne pas porter de gants."], correctIndex: 1, justification: "La règle du 100% connecté ne tolère aucune exception." },
+            { theme: "Step Bolts", type: "Simulation", question: "Peut-on s'ancrer sur les boulons d'escalade (Step bolts) ?", options: ["Oui.", "Non, ils se cisailleraient sous la force dynamique d'une chute (12 kN).", "Oui si neuf.", "Au choix."], correctIndex: 1, justification: "Ancrage toujours sur les membrures principales." },
+            { theme: "Lavage Isolateurs", type: "Simulation", question: "Dans quel sens laver les isolateurs sous tension ?", options: ["Par le milieu.", "Du sommet (terre) vers le bas.", "Par le BAS (côté conducteur sous tension) en remontant vers la terre.", "Peu importe."], correctIndex: 2, justification: "Sinon l'eau sale ruisselle et crée un court-circuit sur la partie non lavée." },
+            { theme: "Eau de Lavage", type: "Épreuve Écrite", question: "Paramètre vital de l'eau de lavage sous tension ?", options: ["Goût.", "pH.", "Sa conductivité électrique (elle doit être d'une pureté extrême, ex: < 50 µS).", "Densité."], correctIndex: 2, justification: "Une eau minéralisée conduirait l'arc jusqu'au camion." },
+            { theme: "Effet Couronne", type: "Épreuve Écrite", question: "Qu'est-ce que l'Effet Couronne ?", options: ["Reflet du soleil.", "Ionisation de l'air autour du câble due au champ électrique intense (crépitement, ozone, lueur).", "Dépôt de glace.", "Défaut d'ancrage."], correctIndex: 1, justification: "Pertes d'énergie en THT." },
+            { theme: "Faisceaux de Câbles", type: "Épreuve Écrite", question: "Pourquoi mettre 2 ou 3 câbles par phase en 400kV ?", options: ["Plus solide.", "Augmenter le diamètre virtuel pour réduire le gradient de champ électrique et l'effet Couronne.", "Pour les oiseaux.", "Baisser la résistance."], correctIndex: 1, justification: "Adoucit le champ de surface." },
+            { theme: "Flèche (Sag)", type: "Épreuve Écrite", question: "Que fait le câble en plein été avec un fort courant ?", options: ["Il rétrécit.", "Il gèle.", "Il se dilate thermiquement, la flèche (Sag) augmente et la distance de garde au sol diminue dangereusement.", "Tension mécanique augmente."], correctIndex: 2, justification: "Risque de flashover avec les arbres." },
+            { theme: "Effet Ferranti", type: "Simulation", question: "Mise sous tension d'une ligne 400kV à VIDE :", options: ["Chute de tension.", "La tension à l'arrivée devient SUPÉRIEURE à la tension de départ.", "Perte de fréquence.", "Coupure."], correctIndex: 1, justification: "Dû à la capacité énorme de la ligne à vide." },
+            { theme: "Parafoudres Polymère", type: "Épreuve Écrite", question: "Avantage du parafoudre à enveloppe silicone ?", options: ["Lourd.", "Hydrophobe (repousse l'eau et la pollution) et n'éclate pas en morceaux mortels.", "Moins cher.", "Anti-feu."], correctIndex: 1, justification: "Résistance extrême à la pollution." }
+        ];
+
+        // -------------------------------------------------------------------------
+        // 5. BASE DE DONNÉES : CE ESSAIS / ANALYSES
+        // -------------------------------------------------------------------------
+        const poolEssaisAnalyses = [
+            { theme: "Polarité TC", type: "Simulation", question: "Test Flick avec pile 9V sur TC. Si polarité correcte, que fait le galvanomètre à la fermeture ?", options: ["Rien.", "Dévie brusquement en positif puis revient à zéro.", "Dévie en négatif.", "Oscille."], correctIndex: 1, justification: "Loi de Lenz." },
+            { theme: "Danger TC Ouvert", type: "Simulation", question: "Secondaire TC laissé ouvert sous tension primaire :", options: ["Le relais déclenche.", "Le noyau sature, induisant des pics de tension mortels en kV.", "Le courant s'effondre.", "Le TC gèle."], correctIndex: 1, justification: "Destruction de l'isolant et danger de mort." },
+            { theme: "Injection Primaire", type: "Épreuve Écrite", question: "Objectif de l'injection primaire ?", options: ["Plus rapide.", "Vérifier le relais seul.", "Valider l'intégrité de toute la chaîne (Rapport TC physique, filerie, polarité, déclenchement du disjoncteur).", "Tester l'huile."], correctIndex: 2, justification: "Test ultime du commissioning." },
+            { theme: "Test Câbles (VLF)", type: "Épreuve Écrite", question: "Pourquoi tester les câbles XLPE en VLF (0.1 Hz) et non en DC ?", options: ["VLF plus rapide.", "Le DC piège des charges d'espace dans le XLPE, provoquant son claquage à la remise sous tension AC (Water treeing).", "Tension plus élevée.", "DC interdit."], correctIndex: 1, justification: "Le DC dégrade les isolants synthétiques." },
+            { theme: "Échomètre (TDR)", type: "Épreuve Écrite", question: "Rôle du TDR en recherche de défauts ?", options: ["Brûler le câble.", "Envoyer une impulsion basse tension pour mesurer le temps de retour de l'écho et calculer la DISTANCE du défaut.", "Écouter le bruit.", "Mesurer l'humidité."], correctIndex: 1, justification: "Pré-localisation du défaut." },
+            { theme: "Thumper", type: "Simulation", question: "Rôle du Générateur d'ondes de choc (Thumper) ?", options: ["Nettoyer le câble.", "Localiser avec précision en créant un arc bruyant (claquement) au point de défaut sous terre, écouté avec un géophone.", "Mesurer la terre.", "Refroidir l'isolant."], correctIndex: 1, justification: "Pinpointing acoustique." },
+            { theme: "Burden Test (TC)", type: "Épreuve Écrite", question: "Si la charge (Burden) du circuit dépasse les VA du TC :", options: ["TC plus précis.", "Le TC saturera prématurément lors d'un défaut.", "Tension chute.", "Aucun impact."], correctIndex: 1, justification: "Incapacité de reproduire le courant de court-circuit." },
+            { theme: "Mesure de Terre (3 Piquets)", type: "Épreuve Écrite", question: "Méthode Fall of Potential. Où placer le piquet C2 ?", options: ["À 2m.", "Dans le poste.", "Très loin pour que les zones d'influence de la grille et du piquet ne se chevauchent pas.", "Sur le transfo."], correctIndex: 2, justification: "Pour obtenir le vrai palier de résistance." },
+            { theme: "Test DRM Disjoncteur", type: "Épreuve Écrite", question: "Que mesure la Résistance Dynamique (DRM) ?", options: ["Résistance statique.", "La résistance EN COURS de mouvement, pour visualiser l'usure de la pointe d'arc (Arcing Contact).", "La bobine.", "Rien."], correctIndex: 1, justification: "Diagnostic sans ouvrir la cuve de SF6." },
+            { theme: "IEC 61850 (GOOSE)", type: "Simulation", question: "Comment tester un interlock GOOSE ?", options: ["Avec un multimètre.", "Pince ampèremétrique.", "Avec un sniffer réseau (Wireshark/IEDScout) sur le switch Ethernet pour lire la variable booléenne.", "En montant la tension."], correctIndex: 2, justification: "Analyse de trames Ethernet." }
+        ];
+
+        let appState = {
+            mode: 'declaratif', id: "", nom: "", prenom: "", matricule: "", societe: "", poste: "", service: "", district: "",
+            currentQuestion: 0, answers: [], score: 0, testQuestions: [], timeRemaining: 3600, timerInterval: null,
+            webcamActive: false, mediaStream: null
+        };
+
+        window.allCandidatesResults = JSON.parse(localStorage.getItem('sonelgaz_results')) || [];
+        const appContainer = document.getElementById('app-container');
+
+        function saveToLocalStorage() { localStorage.setItem('sonelgaz_results', JSON.stringify(window.allCandidatesResults)); }
+        
+        function shuffleArray(array) {
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(Math.random() * currentIndex); currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
+
+        window.renderIntro = function() {
+            clearInterval(appState.timerInterval);
+            document.getElementById('global-timer').classList.add('hidden');
+            stopWebcam();
+            
+            const randomId = "CAND-" + Math.floor(10000 + Math.random() * 90000);
+            
+            let distOptions = '<option value="">-- Choisir un district --</option>';
+            districts.forEach(d => { distOptions += `<option value="${d}">${d}</option>`; });
+            
+            let servOptions = '<option value="">-- Choisir une spécialité --</option>';
+            services.forEach(s => { servOptions += `<option value="${s}">${s}</option>`; });
+
+            appContainer.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden fade-in border border-slate-200">
+                    <div class="bg-slate-800 p-8 text-white text-center relative border-b-4 border-sonelgaz-blue">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-sonelgaz-blue rounded-bl-full opacity-20"></div>
+                        <i class="fas fa-file-signature text-5xl mb-4 text-sonelgaz-orange drop-shadow-md"></i>
+                        <h2 class="text-3xl font-bold font-arabic mb-1">منصة التقييم المهني</h2>
+                        <h3 class="text-xl font-bold tracking-wide">Test d'Habilitation HT/THT</h3>
+                        <p class="text-slate-300 mt-2 text-sm"><i class="fas fa-database mr-1"></i> Banques : Exploitation, Contrôle, Maintenance Poste, Lignards (ML), CE Essais/Analyses</p>
+                    </div>
+
+                    <div class="p-6 sm:p-10">
+                        <div class="flex border-b border-slate-200 mb-8">
+                            <button onclick="window.switchMode('declaratif')" class="w-1/2 py-3 transition-colors ${appState.mode === 'declaratif' ? 'tab-active' : 'tab-inactive'}"><i class="fas fa-user-check mr-2"></i> Mode Officiel</button>
+                            <button onclick="window.switchMode('anonyme')" class="w-1/2 py-3 transition-colors ${appState.mode === 'anonyme' ? 'tab-active' : 'tab-inactive'}"><i class="fas fa-user-secret mr-2"></i> Mode Entraînement</button>
+                        </div>
+
+                        <div id="form-declaratif" class="${appState.mode === 'declaratif' ? 'block' : 'hidden'} space-y-4 fade-in">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-6 rounded-xl border border-slate-100">
+                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nom</label><input type="text" id="in-nom" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue outline-none" placeholder="Nom de famille"></div>
+                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Prénom</label><input type="text" id="in-prenom" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue outline-none" placeholder="Prénom"></div>
+                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Matricule</label><input type="text" id="in-mat" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue outline-none" placeholder="Ex: 123456"></div>
+                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Société Apparente</label><input type="text" id="in-soc" value="STOS - Sonelgaz" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue outline-none"></div>
+                                <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Poste Occupé</label><input type="text" id="in-poste" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue outline-none" placeholder="Ex: Ingénieur / Lignard"></div>
+                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Spécialité (Base de QCM)</label><select id="in-serv" class="w-full px-3 py-2 border rounded-lg bg-white">${servOptions}</select></div>
+                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">District (STOS)</label><select id="in-dist" class="w-full px-3 py-2 border rounded-lg bg-white">${distOptions}</select></div>
+                            </div>
+                        </div>
+
+                        <div id="form-anonyme" class="${appState.mode === 'anonyme' ? 'block' : 'hidden'} space-y-4 fade-in">
+                            <div class="bg-orange-50 border-l-4 border-sonelgaz-orange p-4 mb-4 text-sm text-slate-700">Test d'entraînement anonyme. ID: <strong id="in-id" class="font-mono text-lg">${randomId}</strong></div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Choisissez la spécialité à réviser</label>
+                                <select id="in-serv-anon" class="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-sonelgaz-blue outline-none">
+                                    ${servOptions}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 border-t border-slate-200 pt-6">
+                            <div class="flex items-center gap-3 bg-blue-50 p-4 rounded-xl border border-blue-100 mb-6">
+                                <input type="checkbox" id="in-webcam" class="w-5 h-5 text-sonelgaz-blue rounded focus:ring-sonelgaz-blue cursor-pointer">
+                                <label for="in-webcam" class="font-bold text-slate-700 cursor-pointer text-sm">
+                                    <i class="fas fa-video text-sonelgaz-blue mr-1"></i> Activer le Mode Visio (Surveillance Admin via Webcam/Micro)
+                                </label>
+                            </div>
+                        
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Longueur de l'évaluation</label>
+                            <select id="in-num-q" class="w-full px-4 py-3 bg-slate-50 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue font-medium outline-none">
+                                <option value="5">Test Rapide (5 Questions aléatoires)</option>
+                                <option value="10" selected>Test Standard (10 Questions aléatoires)</option>
+                                <option value="all">Test Complet (Max Questions Dispo)</option>
+                            </select>
+                        </div>
+                        
+                        <p id="start-error" class="text-red-500 text-sm font-bold mt-4 hidden text-center"><i class="fas fa-exclamation-triangle"></i> Veuillez remplir tous les champs du formulaire.</p>
+
+                        <button onclick="window.startExam()" class="mt-6 w-full bg-sonelgaz-blue hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:-translate-y-1 flex justify-center items-center gap-2">
+                            Démarrer le Test (1 Heure) <i class="fas fa-stopwatch"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.switchMode = function(mode) { appState.mode = mode; window.renderIntro(); }
+
+        // --- GESTION DE LA WEBCAM (Simulation WebRTC) ---
+        async function startWebcam() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                appState.mediaStream = stream;
+                const videoEl = document.getElementById('webcam-video');
+                videoEl.srcObject = stream;
+                document.getElementById('webcam-container').style.display = 'block';
+                appState.webcamActive = true;
+            } catch (err) {
+                console.warn("Accès caméra refusé ou introuvable.", err);
+                alert("Impossible d'accéder à la caméra. L'examen continuera sans surveillance vidéo.");
+                appState.webcamActive = false;
+            }
+        }
+
+        function stopWebcam() {
+            if (appState.mediaStream) {
+                appState.mediaStream.getTracks().forEach(track => track.stop());
+                appState.mediaStream = null;
+            }
+            document.getElementById('webcam-container').style.display = 'none';
+            appState.webcamActive = false;
+        }
+
+        function startTimer() {
+            appState.timeRemaining = 3600; // 60 mins
+            clearInterval(appState.timerInterval);
+            document.getElementById('global-timer').classList.remove('hidden');
+            document.getElementById('global-timer').classList.remove('bg-red-700', 'animate-pulse');
+            document.getElementById('global-timer').classList.add('bg-red-600');
+            updateTimerDisplay();
+            
+            appState.timerInterval = setInterval(() => {
+                appState.timeRemaining--;
+                updateTimerDisplay();
+                if (appState.timeRemaining <= 0) {
+                    clearInterval(appState.timerInterval);
+                    autoSubmitTest();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const el = document.getElementById('timer-display');
+            if(!el) return;
+            const h = Math.floor(appState.timeRemaining / 3600);
+            const m = Math.floor((appState.timeRemaining % 3600) / 60);
+            const s = appState.timeRemaining % 60;
+            el.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            
+            const timerContainer = document.getElementById('global-timer');
+            if (appState.timeRemaining < 300) {
+                timerContainer.classList.remove('bg-red-600');
+                timerContainer.classList.add('bg-red-700', 'animate-pulse');
+            }
+        }
+
+        function autoSubmitTest() {
+            while (appState.answers.length < appState.testQuestions.length) {
+                appState.answers.push({ questionIndex: appState.answers.length, selected: -1, isCorrect: false });
+            }
+            window.saveResultAndRender();
+        }
+
+        window.startExam = function() {
+            if (appState.mode === 'declaratif') {
+                const fields = ['nom', 'prenom', 'mat', 'soc', 'poste', 'serv', 'dist'];
+                let isValid = true;
+                fields.forEach(f => {
+                    const val = document.getElementById(`in-${f}`).value.trim();
+                    if(!val) isValid = false;
+                    appState[f === 'mat' ? 'matricule' : (f==='soc' ? 'societe' : (f==='serv' ? 'service' : (f==='dist' ? 'district' : f)))] = val.toUpperCase();
+                });
+                if (!isValid) { document.getElementById('start-error').classList.remove('hidden'); return; }
+                appState.id = `${appState.matricule}-${Math.floor(100+Math.random()*900)}`;
+            } else {
+                const serviceVal = document.getElementById('in-serv-anon').value;
+                if (!serviceVal) { document.getElementById('start-error').classList.remove('hidden'); return; }
+                appState.id = document.getElementById('in-id').innerText;
+                appState.nom = "ANONYME"; appState.prenom = ""; appState.matricule = "N/A";
+                appState.societe = "N/A"; appState.poste = "N/A"; appState.district = "N/A";
+                appState.service = serviceVal;
+            }
+
+            // Gestion de la Visio
+            const wantWebcam = document.getElementById('in-webcam').checked;
+            if (wantWebcam) {
+                startWebcam();
+            }
+
+            // --- SÉLECTION DE LA BASE DE DONNÉES EN FONCTION DU SERVICE ---
+            let basePool = [];
+            if (appState.service === 'Contrôle électrique') {
+                basePool = JSON.parse(JSON.stringify(poolControle));
+            } else if (appState.service === 'Maintenance Poste') {
+                basePool = JSON.parse(JSON.stringify(poolMaintenance));
+            } else if (appState.service === 'Maintenance Ligne (ML)') {
+                basePool = JSON.parse(JSON.stringify(poolMaintenanceLigne));
+            } else if (appState.service === 'CE ESSAIS/ANALYSES') {
+                basePool = JSON.parse(JSON.stringify(poolEssaisAnalyses));
+            } else {
+                basePool = JSON.parse(JSON.stringify(poolExploitation)); 
+            }
+
+            const nbReq = document.getElementById('in-num-q').value;
+            basePool = shuffleArray(basePool);
+            
+            if (nbReq !== 'all') {
+                const limite = parseInt(nbReq);
+                appState.testQuestions = basePool.slice(0, Math.min(limite, basePool.length));
+            } else {
+                appState.testQuestions = basePool;
+            }
+            
+            appState.currentQuestion = 0; 
+            
+            // Initialiser le tableau de réponses
+            appState.answers = appState.testQuestions.map((_, i) => ({
+                questionIndex: i,
+                selected: -1,
+                isCorrect: false
+            }));
+
+            startTimer();
+            window.renderQuestion();
+        }
+
+        window.renderQuestion = function() {
+            const qIndex = appState.currentQuestion;
+            const q = appState.testQuestions[qIndex];
+            const progress = ((qIndex) / appState.testQuestions.length) * 100;
+            const typeBg = q.type === "Épreuve Écrite" ? "bg-blue-50 text-sonelgaz-blue border-blue-200" : "bg-orange-50 text-sonelgaz-orange border-orange-200";
+
+            let optionsHtml = '';
+            const previouslySelected = appState.answers[qIndex].selected;
+
+            q.options.forEach((opt, index) => {
+                const isChecked = (previouslySelected === index) ? 'checked' : '';
+                optionsHtml += `
+                    <div class="relative mb-3 fade-in" style="animation-delay: ${index * 0.1}s">
+                        <input type="radio" name="q-option" id="opt-${index}" value="${index}" class="radio-custom sr-only peer" onchange="window.selectAnswer(${index})" ${isChecked}>
+                        <label for="opt-${index}" class="flex items-start p-4 bg-white border-2 border-slate-100 rounded-xl cursor-pointer hover:bg-slate-50 transition-all peer-focus:ring-2 peer-focus:ring-sonelgaz-blue shadow-sm">
+                            <div class="radio-circle w-5 h-5 border-2 border-slate-300 rounded-full mr-3 mt-0.5 flex-shrink-0 flex items-center justify-center transition-colors"><div class="w-2.5 h-2.5 bg-white rounded-full"></div></div>
+                            <span class="text-slate-700 font-medium text-sm md:text-base">${opt}</span>
+                        </label>
+                    </div>`;
+            });
+
+            const identity = appState.mode === 'declaratif' ? `${appState.nom} ${appState.prenom}` : `Anonyme`;
+            
+            // Boutons de navigation
+            const prevBtnState = qIndex === 0 ? 'hidden' : '';
+            const nextBtnText = qIndex === appState.testQuestions.length - 1 ? 'Terminer <i class="fas fa-flag-checkered"></i>' : 'Suivant <i class="fas fa-arrow-right"></i>';
+            const nextBtnColor = qIndex === appState.testQuestions.length - 1 ? 'bg-green-600 hover:bg-green-700' : 'bg-sonelgaz-blue hover:bg-blue-700';
+
+            appContainer.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden fade-in border border-slate-200 flex flex-col h-[85vh] max-h-[800px]">
+                    <div class="p-4 border-b border-slate-100 shrink-0 bg-slate-50">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase">Candidat (${appState.service})</span>
+                                <span class="text-sm font-bold text-slate-700"><i class="fas fa-user-tag text-sonelgaz-blue mr-1"></i> ${identity}</span>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-sm font-bold bg-white border px-3 py-1 rounded-lg text-slate-600 shadow-sm">Q ${qIndex + 1} / ${appState.testQuestions.length}</span>
+                            </div>
+                        </div>
+                        <div class="w-full bg-slate-200 rounded-full h-1.5"><div class="bg-sonelgaz-orange h-1.5 rounded-full transition-all duration-500" style="width: ${progress}%"></div></div>
+                    </div>
+
+                    <div class="p-6 overflow-y-auto flex-grow custom-scrollbar bg-slate-50">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-bold border ${typeBg} mb-5 shadow-sm"><i class="fas fa-tag"></i> ${q.theme}</div>
+                        <h2 class="text-lg md:text-xl font-bold text-slate-800 mb-6 leading-relaxed border-l-4 border-sonelgaz-blue pl-4">${q.question}</h2>
+                        <div class="options-container space-y-2">${optionsHtml}</div>
+                    </div>
+
+                    <div class="p-4 border-t border-slate-100 bg-white shrink-0 flex justify-between items-center">
+                        <button onclick="window.confirmQuit()" class="text-red-500 hover:text-red-700 font-bold text-sm px-4 py-2 rounded-lg hover:bg-red-50 transition">
+                            <i class="fas fa-times mr-1"></i> Quitter
+                        </button>
+                        <div class="flex gap-3">
+                            <button onclick="window.prevQuestion()" class="${prevBtnState} bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-2">
+                                <i class="fas fa-arrow-left"></i> Précédent
+                            </button>
+                            <button onclick="window.nextQuestion()" class="${nextBtnColor} text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center gap-2">
+                                ${nextBtnText}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.selectAnswer = function(selectedIndex) {
+            const qIndex = appState.currentQuestion;
+            const q = appState.testQuestions[qIndex];
+            appState.answers[qIndex].selected = selectedIndex;
+            appState.answers[qIndex].isCorrect = (selectedIndex === q.correctIndex);
+        }
+
+        window.prevQuestion = function() {
+            if (appState.currentQuestion > 0) {
+                appState.currentQuestion--;
+                window.renderQuestion();
+            }
+        }
+
+        window.nextQuestion = function() {
+            // Vérifier si une réponse est sélectionnée
+            if (appState.answers[appState.currentQuestion].selected === -1) {
+                alert("Veuillez sélectionner une réponse avant de continuer.");
+                return;
+            }
+
+            if (appState.currentQuestion < appState.testQuestions.length - 1) {
+                appState.currentQuestion++;
+                window.renderQuestion();
+            } else {
+                window.saveResultAndRender();
+            }
+        }
+
+        window.confirmQuit = function() {
+            if (confirm("Attention, quitter maintenant annulera votre examen en cours. Êtes-vous sûr ?")) {
+                clearInterval(appState.timerInterval);
+                document.getElementById('global-timer').classList.add('hidden');
+                stopWebcam();
+                window.renderIntro();
+            }
+        }
+
+        window.saveResultAndRender = function() {
+            clearInterval(appState.timerInterval);
+            document.getElementById('global-timer').classList.add('hidden');
+            stopWebcam(); // Arrête la webcam à la fin
+            
+            // Calcul du score final
+            appState.score = appState.answers.filter(a => a.isCorrect).length;
+            
+            const percentage = Math.round((appState.score / appState.testQuestions.length) * 100);
+            const timeUsed = 3600 - appState.timeRemaining;
+            
+            const resultData = {
+                id: appState.id, mode: appState.mode,
+                nom: appState.nom, prenom: appState.prenom, matricule: appState.matricule, 
+                societe: appState.societe, poste: appState.poste, service: appState.service, district: appState.district,
+                score: appState.score, total: appState.testQuestions.length, percentage: percentage, 
+                date: new Date().toLocaleString('fr-FR'), timeUsed: timeUsed,
+                answers: JSON.parse(JSON.stringify(appState.answers)),
+                testSnapshot: JSON.parse(JSON.stringify(appState.testQuestions))
+            };
+            
+            window.allCandidatesResults.unshift(resultData);
+            saveToLocalStorage(); 
+            
+            renderFinalScore(resultData);
+        }
+
+        function renderFinalScore(data) {
+            let statusClass, statusText, statusIcon;
+            if (data.percentage >= 80) { statusClass = "text-green-700 bg-green-50 border-green-500"; statusText = "Avis Favorable"; statusIcon = "fa-check-double"; } 
+            else if (data.percentage >= 60) { statusClass = "text-sonelgaz-orange bg-orange-50 border-sonelgaz-orange"; statusText = "Avis Réservé (À réviser)"; statusIcon = "fa-triangle-exclamation"; } 
+            else { statusClass = "text-red-700 bg-red-50 border-red-500"; statusText = "Avis Défavorable"; statusIcon = "fa-skull-crossbones"; }
+
+            appContainer.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden fade-in border border-slate-200">
+                    <div class="bg-slate-900 p-8 text-white text-center border-b-4 border-sonelgaz-orange relative">
+                        <i class="fas fa-clipboard-check text-5xl mb-4 text-sonelgaz-blue drop-shadow-lg"></i>
+                        <h2 class="text-2xl font-bold font-arabic mb-1">تقرير التقييم</h2>
+                        <h2 class="text-xl font-bold">Fin de l'évaluation (${data.service})</h2>
+                        <p class="text-slate-300 mt-2 text-sm">${data.mode === 'declaratif' ? `${data.nom} ${data.prenom} | Mat: ${data.matricule}` : `Anonyme (${data.id})`}</p>
+                    </div>
+                    <div class="p-8 text-center bg-slate-50">
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6 inline-block w-full max-w-sm mx-auto">
+                            <h3 class="text-slate-400 font-bold uppercase text-xs mb-2">Score Final</h3>
+                            <div class="text-6xl font-black text-slate-800">${data.score} <span class="text-2xl text-slate-400">/ ${data.total}</span></div>
+                            <div class="mt-4 text-sm font-semibold border-l-4 pl-4 py-2 ${statusClass} rounded-r-lg text-left"><i class="fas ${statusIcon} mr-2"></i> ${statusText}</div>
+                        </div>
+                        <p class="text-sm text-slate-600 mb-6">Vos résultats ont été sauvegardés localement. L'administrateur peut y accéder pour une analyse détaillée.</p>
+                        <button onclick="window.renderIntro()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition"><i class="fas fa-home mr-2"></i> Retour à l'accueil</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.showAdminLogin = function() {
+            appContainer.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden fade-in p-8 text-center relative border border-slate-200">
+                    <button onclick="window.renderIntro()" class="absolute top-4 right-4 text-slate-400 bg-slate-100 p-2 rounded-lg"><i class="fas fa-times"></i></button>
+                    <div class="w-20 h-20 bg-slate-800 text-sonelgaz-orange rounded-full flex items-center justify-center mx-auto mb-6"><i class="fas fa-user-shield text-3xl"></i></div>
+                    <h2 class="text-2xl font-bold mb-4">Espace Administrateur</h2>
+                    <input type="password" id="admin-password" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl tracking-[0.3em] mb-4" placeholder="••••••••">
+                    <button onclick="window.verifyAdmin()" class="w-full bg-sonelgaz-blue text-white font-bold py-3.5 rounded-xl shadow-md"><i class="fas fa-unlock"></i> Connexion</button>
+                    <p id="admin-error" class="text-red-500 text-xs font-bold mt-2 hidden">Code incorrect</p>
+                </div>
+            `;
+        }
+
+        window.verifyAdmin = function() {
+            if (document.getElementById('admin-password').value === '15041978') window.renderAdminDashboard(); 
+            else document.getElementById('admin-error').classList.remove('hidden');
+        }
+
+        window.exportToCSV = function() {
+            if (window.allCandidatesResults.length === 0) return alert("Aucune donnée à exporter.");
+            
+            let csvContent = "\uFEFF"; 
+            csvContent += "Date;Identifiant;Mode;Nom;Prénom;Matricule;Société;Poste;Service;District;Score;Total Questions;Pourcentage;Temps (secondes)\n";
+            window.allCandidatesResults.forEach(res => {
+                let row = [
+                    res.date, res.id, res.mode, res.nom, res.prenom, res.matricule,
+                    res.societe, res.poste, res.service, res.district,
+                    res.score, res.total, res.percentage + "%", res.timeUsed
+                ];
+                csvContent += row.map(e => `"${(e || '').toString().replace(/"/g, '""')}"`).join(";") + "\n";
+            });
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `Resultats_Habilitation_Sonelgaz_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
+        }
+
+        window.renderAdminDashboard = function() {
+            let tableRows = window.allCandidatesResults.length === 0 ? `<tr><td colspan=\"5\" class=\"p-8 text-center text-slate-400\"><i class=\"fas fa-database text-3xl mb-3 block\"></i>Base de données vide.</td></tr>` : '';
+            window.allCandidatesResults.forEach((res, index) => {
+                let badgeClass = res.percentage >= 80 ? "bg-green-100 text-green-800" : (res.percentage >= 60 ? "bg-orange-100 text-orange-800" : "bg-red-100 text-red-800");
+                const identity = res.mode === 'declaratif' ? `<div class="font-bold text-slate-800">${res.nom} ${res.prenom}</div><div class="text-[10px] text-slate-500">Mat: ${res.matricule} | ${res.district}</div>` : `<div class="font-mono text-sonelgaz-blue font-bold">${res.id}</div>`;
+                
+                tableRows += `
+                    <tr class="hover:bg-slate-50 border-b border-slate-100">
+                        <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">${res.date.split(' ')[0]}<br>${res.date.split(' ')[1]}</td>
+                        <td class="px-4 py-3">${identity}</td>
+                        <td class="px-4 py-3 text-xs text-slate-600">${res.poste}<br><span class="font-bold text-sonelgaz-blue">${res.service}</span></td>
+                        <td class="px-4 py-3 text-center"><span class="px-2 py-1 text-xs font-bold rounded ${badgeClass}">${res.percentage}%</span></td>
+                        <td class="px-4 py-3 text-center"><button onclick="window.viewCandidateDetails(${index})" class="text-sonelgaz-blue bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 transition"><i class="fas fa-search"></i> Analyser</button></td>
+                    </tr>`;
+            });
+
+            appContainer.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl overflow-hidden fade-in border border-slate-200 flex flex-col h-[90vh]">
+                    <div class="bg-slate-900 p-5 flex flex-wrap justify-between items-center text-white border-b-4 border-sonelgaz-orange gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold"><i class="fas fa-chart-pie text-sonelgaz-orange mr-2"></i> Tableau de Bord Admin</h2>
+                            <span class="text-green-400 text-xs"><i class="fas fa-hard-drive"></i> Mode Local Sécurisé</span>
+                        </div>
+                        <div class="flex flex-wrap gap-3">
+                            <button onclick="window.exportToCSV()" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center shadow-md">
+                                <i class="fas fa-file-excel mr-2"></i> Exporter (Excel)
+                            </button>
+                            <button onclick="window.confirmClearDialog()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center shadow-md text-white">
+                                <i class="fas fa-trash-alt mr-2"></i> Purger
+                            </button>
+                            <button onclick="window.renderIntro()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center shadow-md">
+                                <i class="fas fa-sign-out-alt mr-2"></i> Quitter
+                            </button>
+                        </div>
+                    </div>
+                    <div class="overflow-auto flex-grow bg-slate-50">
+                        <table class="min-w-full divide-y divide-slate-200">
+                            <thead class="bg-slate-100 sticky top-0 shadow-sm z-10">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Date</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Identité</th>
+                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Poste / Service</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase">Score</th>
+                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-table-body" class="bg-white">${tableRows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.confirmClearDialog = function() {
+            const modal = document.createElement('div');
+            modal.id = 'delete-modal';
+            modal.innerHTML = `
+                <div class="fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center fade-in">
+                    <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center">
+                        <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-exclamation-triangle text-2xl"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2">Purger les données ?</h3>
+                        <p class="text-sm text-slate-500 mb-6">Cette action est définitive. Tous les rapports de cette session seront effacés.</p>
+                        <div class="flex gap-3">
+                            <button onclick="document.getElementById('delete-modal').remove()" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition">Annuler</button>
+                            <button onclick="window.confirmClear()" class="w-1/2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-md transition">Oui, effacer</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        window.confirmClear = function() {
+            window.allCandidatesResults = [];
+            saveToLocalStorage();
+            document.getElementById('delete-modal').remove();
+            window.renderAdminDashboard();
+        }
+
+        window.viewCandidateDetails = function(index) {
+            const cand = window.allCandidatesResults[index];
+            let detailsHtml = ''; 
+            
+            cand.answers.forEach((ans, i) => {
+                const q = cand.testSnapshot[ans.questionIndex];
+                const selectedText = ans.selected === -1 ? "Non répondu (Temps écoulé ou ignoré)" : q.options[ans.selected];
+                const isCorrect = ans.isCorrect;
+                
+                const bgColor = isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200";
+                const iconColor = isCorrect ? "text-green-600" : "text-red-600";
+                const iconClass = isCorrect ? "fa-check-circle" : "fa-times-circle";
+                const badgeBg = isCorrect ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800";
+
+                detailsHtml += `
+                    <div class="mb-3 p-4 ${bgColor} border rounded-lg shadow-sm">
+                        <p class="text-sm font-bold text-slate-800 mb-2">
+                            <span class="${badgeBg} px-2 py-0.5 rounded text-xs mr-2">Q${i+1} | ${q.theme}</span>${q.question}
+                        </p>
+                        <p class="text-xs ${iconColor} mb-1 font-semibold"><i class="fas ${iconClass} mr-1"></i> Réponse donnée : ${selectedText}</p>
+                        ${!isCorrect ? `<p class="text-xs text-green-700 font-semibold mt-1"><i class="fas fa-check mr-1"></i> Bonne réponse : ${q.options[q.correctIndex]}</p>` : ''}
+                    </div>`;
+            });
+
+            const m = Math.floor(cand.timeUsed / 60); const s = cand.timeUsed % 60;
+            const timeStr = `${m} min ${s} sec`;
+
+            appContainer.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden fade-in border border-slate-200 h-[85vh] flex flex-col">
+                    <div class="bg-slate-100 p-4 border-b flex justify-between shrink-0">
+                        <button onclick="window.renderAdminDashboard()" class="text-slate-600 font-bold text-sm bg-white px-4 py-2 rounded-lg border shadow-sm hover:bg-slate-50"><i class="fas fa-arrow-left mr-2"></i> Retour</button>
+                        <span class="font-mono text-xs text-slate-400 pt-2">Session ID: ${cand.id}</span>
+                    </div>
+                    <div class="p-6 flex-grow overflow-y-auto bg-slate-50 flex flex-col gap-6">
+                        
+                        <div class="bg-slate-900 rounded-xl p-6 shadow-lg text-white border-b-4 border-sonelgaz-blue flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-xl mb-1 flex items-center gap-2"><i class="fas fa-brain text-sonelgaz-blue"></i> Analyse Intelligente HSE</h3>
+                                <p class="text-sm text-slate-400">Générez un rapport complet sur les failles techniques de ce candidat.</p>
+                            </div>
+                            <button onclick="window.renderAIAnalysisPage(${index})" class="bg-sonelgaz-blue hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition shadow-md flex items-center gap-2">
+                                Générer le Rapport IA <i class="fas fa-magic"></i>
+                            </button>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-xl border shadow-sm">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <h3 class="text-2xl font-bold">${cand.nom} ${cand.prenom}</h3>
+                                    <p class="text-sm font-bold text-sonelgaz-blue uppercase mt-1"><i class="fas fa-network-wired"></i> ${cand.service}</p>
+                                    <p class="text-xs text-slate-500">${cand.poste} | ${cand.societe}</p>
+                                </div>
+                                <div class="text-right"><div class="text-3xl font-black ${cand.percentage >= 80 ? 'text-green-600' : 'text-red-600'}">${cand.percentage}%</div><div class="text-xs text-slate-400">${cand.score}/${cand.total}</div></div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border">
+                                <div><strong>Matricule:</strong><br>${cand.matricule}</div>
+                                <div><strong>District:</strong><br>${cand.district}</div>
+                                <div><strong>Temps d'éval:</strong><br>${timeStr}</div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-lg font-bold mb-3"><i class="fas fa-list-check text-sonelgaz-blue mr-2"></i> Détail de toutes les réponses</h3>
+                            <div class="space-y-2">${detailsHtml}</div>
+                        </div>
+
+                    </div>
+                </div>
+            `;
+        }
+
+        window.renderAIAnalysisPage = function(idx) {
+            const cand = window.allCandidatesResults[idx];
+            
+            appContainer.innerHTML = `
+                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden fade-in border border-slate-200 min-h-[70vh] flex flex-col items-center justify-center p-10">
+                    <div class="text-sonelgaz-blue text-6xl mb-6"><i class="fas fa-brain animate-pulse"></i></div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Génération de l'expertise IA en cours...</h2>
+                    <p class="text-slate-500 mb-8 text-center max-w-lg">L'Intelligence Artificielle analyse les erreurs de ${cand.nom} spécifiques à sa spécialité (${cand.service}) pour rédiger un rapport détaillé.</p>
+                    <div class="w-64 bg-slate-200 rounded-full h-2 overflow-hidden relative">
+                        <div class="bg-sonelgaz-orange h-2 absolute w-1/2 rounded-full animate-[progress_1.5s_ease-in-out_infinite]"></div>
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                let erreursHtml = ''; let risquesArray = []; let nbErrors = 0;
+                cand.answers.forEach(a => {
+                    if (!a.isCorrect && a.selected !== -1) {
+                        nbErrors++;
+                        const q = cand.testSnapshot[a.questionIndex];
+                        erreursHtml += `<li><strong>Faiblesse en [${q.theme}] :</strong> Le candidat a choisi "${q.options[a.selected]}" au lieu de la procédure stricte ("${q.options[q.correctIndex]}").</li>`;
+                        
+                        // Mapping d'erreurs pour l'IA
+                        if(q.theme.includes("SF6") || q.theme.includes("Transformateur") || q.theme.includes("OLTC")) risquesArray.push("Risque de destruction matérielle majeure (Explosion de l'équipement, Incendie des huiles).");
+                        if(q.theme.includes("Consignation") || q.theme.includes("Terre") || q.theme.includes("Tension de Pas")) risquesArray.push("Risque mortel d'électrocution pour le personnel au sol (Tension de pas ou réalimentation).");
+                        if(q.theme.includes("Protection") || q.theme.includes("Relais") || q.theme.includes("Batteries") || q.theme.includes("Injection") || q.theme.includes("Omicron")) risquesArray.push("Risque de perte totale de contrôle (Black-out, paralysie des sécurités, non-déclenchement dû à des erreurs de filerie ou paramétrage non décelées).");
+                        if(q.theme.includes("Hauteur") || q.theme.includes("EPI") || q.theme.includes("Harnais") || q.theme.includes("Point Mort")) risquesArray.push("Risque mortel de chute de grande hauteur lié au non-respect de l'ancrage 100%.");
+                        if(q.theme.includes("Lavage") || q.theme.includes("Isolateurs") || q.theme.includes("Téléphone")) risquesArray.push("Risque mortel d'électrocution directe ou d'amorçage d'arc dû à l'inattention ou au non-respect des distances de garde.");
+                        if(q.theme.includes("Câbles") || q.theme.includes("VLF") || q.theme.includes("TDR") || q.theme.includes("Thumper") || q.theme.includes("Burn-down")) risquesArray.push("Risque de destruction d'un câble sain par une méthode d'essai inappropriée (DC Hipot) ou mauvaise localisation coûtant de lourds travaux de génie civil.");
+                    }
+                });
+
+                let htmlContent = '';
+                if (nbErrors === 0) {
+                    htmlContent = `<p><strong>Le candidat ${cand.nom} ${cand.prenom} a obtenu un excellent score.</strong></p><p>Aucune faille technique majeure ni méconnaissance n'a été détectée. Le candidat maîtrise les procédures de son domaine.</p>`;
+                } else {
+                    let risquesUniques = [...new Set(risquesArray)];
+                    let risquesHtml = risquesUniques.map(r => `<li>${r}</li>`).join('');
+                    let recoHtml = cand.percentage < 80 
+                        ? `<li><strong>Formation immédiate :</strong> Un recyclage technique intensif ciblé sur son module (${cand.service}) est indispensable avant toute intervention complexe.</li>`
+                        : `<li><strong>Recommandation :</strong> Rappel verbal des points techniques spécifiques lors du prochain briefing équipe.</li>`;
+
+                    htmlContent = `
+                        <h3>1. Résumé de l'Évaluation (${cand.service})</h3>
+                        <p>Le candidat <strong>${cand.nom} ${cand.prenom}</strong> (${cand.poste}) a obtenu un score de <strong>${cand.percentage}%</strong>. L'analyse révèle des lacunes sur ${nbErrors} point(s) critique(s).</p>
+                        <h3>2. Analyse des Lacunes Techniques et Comportementales</h3>
+                        <ul>${erreursHtml}</ul>
+                        <h3>3. Risques Potentiels sur le Terrain</h3>
+                        <ul>${risquesHtml || "<li>Risque d'exploitation mineur (Erreurs analytiques ou administratives).</li>"}</ul>
+                        <h3>4. Plan d'Action et Recommandations (HSE/STOS)</h3>
+                        <ul>${recoHtml}</ul>
+                    `;
+                }
+
+                appContainer.innerHTML = `
+                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden fade-in border border-slate-200 flex flex-col h-[85vh]">
+                        <div class="bg-slate-900 p-6 flex justify-between items-center text-white border-b-4 border-sonelgaz-blue shrink-0">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-robot text-sonelgaz-blue text-3xl"></i>
+                                <div><h2 class="text-xl font-bold">Rapport d'Expertise IA</h2><p class="text-sm text-slate-400">Généré pour ${cand.nom} ${cand.prenom} | Module : ${cand.service}</p></div>
+                            </div>
+                            <div class="flex gap-3">
+                                <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition"><i class="fas fa-print mr-2"></i> Imprimer</button>
+                                <button onclick="window.viewCandidateDetails(${idx})" class="bg-sonelgaz-orange hover:bg-orange-600 px-4 py-2 rounded-xl text-sm font-bold transition"><i class="fas fa-arrow-left mr-2"></i> Retour</button>
+                            </div>
+                        </div>
+                        <div class="p-8 md:p-12 overflow-y-auto custom-scrollbar flex-grow bg-slate-50">
+                            <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-200 ai-report text-slate-800">
+                                ${htmlContent}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }, 1500); 
+        }
+
+        renderIntro();
+    </script>
+</body>
+</html>
