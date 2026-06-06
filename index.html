@@ -3,1019 +3,1013 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Évaluation d'Habilitation HT/THT - STOS Sonelgaz</title>
+    <title>Sonelgaz STOS TEST - Ingénierie & Habilitation GAZ</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Recharts (Pour les graphiques interactifs) -->
+    <script src="https://unpkg.com/prop-types/prop-types.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.1.9/umd/Recharts.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap'); 
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; }
         
-        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
-        .font-arabic { font-family: 'Tajawal', sans-serif; }
-        .fade-in { animation: fadeIn 0.3s ease-out forwards; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+        }
         
-        .radio-custom:checked + label { background-color: #eff6ff; border-color: #0072ce; box-shadow: 0 4px 6px -1px rgba(0, 114, 206, 0.1); }
-        .radio-custom:checked + label .radio-circle { border-color: #0072ce; background-color: #0072ce; }
+        .glass-dark {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(15px);
+            border-right: 1px solid rgba(255,255,255,0.05);
+        }
         
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px;}
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        
-        .bg-sonelgaz-blue { background-color: #0072ce; }
-        .text-sonelgaz-blue { color: #0072ce; }
-        .border-sonelgaz-blue { border-color: #0072ce; }
-        .bg-sonelgaz-orange { background-color: #f39200; }
-        
-        .tab-active { border-bottom: 3px solid #0072ce; color: #0072ce; font-weight: 700; }
-        .tab-inactive { border-bottom: 3px solid transparent; color: #64748b; font-weight: 500; }
+        .graph-container {
+            background: rgba(11, 17, 32, 0.7);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 1rem;
+        }
 
-        /* Style Webcam & Visio */
-        #webcam-container {
-            position: fixed; bottom: 20px; right: 20px; width: 240px; height: 180px;
-            background: #1e293b; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            border: 3px solid #f39200; overflow: hidden; z-index: 50; display: none; transition: all 0.3s ease;
-        }
-        #webcam-container:hover { transform: scale(1.05); }
-        #webcam-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-        .recording-indicator {
-            position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.6);
-            padding: 4px 8px; border-radius: 20px; display: flex; align-items: center; gap: 6px; color: white; font-size: 10px; font-weight: bold;
-        }
-        .recording-dot { width: 8px; height: 8px; background-color: #ef4444; border-radius: 50%; animation: pulse 1.5s infinite; }
-        #audio-level { position: absolute; bottom: 10px; right: 10px; width: 10px; height: 40px; background: rgba(255,255,255,0.2); border-radius: 5px; overflow: hidden; }
-        #audio-bar { width: 100%; height: 0%; background: #22c55e; transition: height 0.1s ease; position: absolute; bottom: 0; }
-        
-        @media print {
-            body { background: white; }
-            .no-print { display: none !important; }
-            #app-container { max-width: 100% !important; margin: 0; padding: 0; box-shadow: none; border: none; }
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
     </style>
 </head>
-<body class="text-gray-800 antialiased min-h-screen flex flex-col selection:bg-sonelgaz-orange selection:text-white relative">
+<body class="h-screen overflow-hidden selection:bg-orange-500/30">
+    <div id="root" class="h-full w-full relative"></div>
 
-    <!-- CHRONOMÈTRE GLOBAL -->
-    <div id="global-timer" class="hidden fixed top-2 right-2 sm:top-5 sm:right-5 z-40 bg-red-600 text-white font-mono font-bold text-lg sm:text-2xl px-4 sm:px-6 py-2 sm:py-3 rounded-xl shadow-2xl border-4 border-white flex items-center gap-3 no-print">
-        <i class="fas fa-stopwatch animate-pulse"></i>
-        <span id="timer-display">01:00:00</span>
-    </div>
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+        const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } = window.Recharts;
 
-    <!-- WEBCAM CONTAINER (VISIO) -->
-    <div id="webcam-container" class="no-print">
-        <video id="webcam-video" autoplay muted playsinline></video>
-        <div class="recording-indicator"><div class="recording-dot"></div> EXAMEN SURVEILLÉ (REC)</div>
-        <div id="audio-level" title="Niveau du microphone"><div id="audio-bar"></div></div>
-    </div>
-
-    <!-- CUSTOM MODAL -->
-    <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900/80 z-50 flex items-center justify-center fade-in no-print">
-        <div class="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 shadow-2xl text-center border-t-4 border-sonelgaz-orange">
-            <div id="modal-icon" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"></div>
-            <h3 id="modal-title" class="text-xl font-bold text-slate-800 mb-2">Titre</h3>
-            <p id="modal-message" class="text-sm text-slate-500 mb-6">Message</p>
-            <div id="modal-buttons" class="flex gap-3 justify-center"></div>
-        </div>
-    </div>
-
-    <header class="bg-white border-b-4 border-sonelgaz-blue shadow-sm py-3 px-4 sm:px-6 flex justify-between items-center sticky top-0 z-30 no-print">
-        <div class="flex items-center gap-3 sm:gap-5">
-            <div id="logo-container" class="relative shrink-0 flex items-center justify-center bg-white rounded-lg shadow-sm border border-slate-100 h-12 w-12 sm:h-16 sm:w-16 overflow-hidden">
-                <img src="logo.png" alt="Sonelgaz Logo" class="w-full h-full object-contain z-10" id="main-logo" onerror="document.getElementById('main-logo').style.display='none'; document.getElementById('svg-logo').style.display='block';">
-                <svg id="svg-logo" style="display:none;" viewBox="0 0 100 100" class="w-full h-full rounded">
-                    <rect width="100" height="100" fill="#f39200"/><path d="M 20 60 L 45 20 L 60 20 L 40 50 L 75 50 L 50 85 L 65 85 L 85 45 L 80 40 L 50 40 Z" fill="#0072ce"/><circle cx="60" cy="25" r="7" fill="#0072ce"/><circle cx="80" cy="25" r="7" fill="#0072ce"/>
-                </svg>
-            </div>
-            <div class="flex flex-col justify-center">
-                <span class="text-sonelgaz-blue font-bold text-sm sm:text-lg md:text-xl font-arabic leading-tight tracking-wide">الشركة الجزائرية للكهرباء و الغاز - نقل الكهرباء و مسير المنظومة</span>
-                <span class="text-sonelgaz-blue font-semibold text-[10px] sm:text-xs md:text-sm mt-0.5 leading-tight">Société algérienne de l'électricité et du gaz - Transport électricité et opérateur système</span>
-            </div>
-        </div>
-        <button onclick="window.showAdminLogin()" class="ml-4 text-slate-400 hover:text-sonelgaz-blue transition flex flex-col items-center shrink-0 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200">
-            <i class="fas fa-lock text-lg"></i><span class="text-[10px] font-bold mt-1 tracking-widest">ADMIN</span>
-        </button>
-    </header>
-
-    <main id="app-container" class="flex-grow flex items-center justify-center p-4 sm:p-6 w-full max-w-6xl mx-auto"></main>
-
-    <footer class="bg-white border-t border-gray-200 py-4 text-center text-xs sm:text-sm text-gray-500 font-medium no-print">
-        &copy; 2026 - Plateforme d'Évaluation Pédagogique - STOS Sonelgaz
-    </footer>
-
-    <script>
-        const districts = ["ORAN", "MOSTAGANEM", "SIDI BELABES", "TIARET", "MASCARA", "TLEMCEN", "AIN TEMOUCHENT"];
-        const services = ["Exploitation", "Contrôle électrique", "Maintenance Poste", "Maintenance Ligne (ML)", "CE ESSAIS/ANALYSES", "Télécom & Téléconduite"];
-        
-        /* ================= BANQUES DE DONNÉES COMPLÈTES (SÉPARÉES) ================= */
-
-        // 1. EXPLOITATION (Réseau, Consignation, Manœuvres, CGE)
-        const poolExploitation = [
-            { theme: "Procédure & OT", type: "Épreuve Écrite", question: "Une équipe se présente pour une intervention urgente. Le Chef de Travaux (CDT) n'a pas d'Ordre de Travail (OT). Que doit faire le CC ?", options: ["L'accepter avec accord verbal.", "Rédiger l'OT.", "Refuser toute consignation jusqu'à présentation de l'OT.", "Délivrer l'AT sous condition."], correctIndex: 2, justification: "L'OT est le document juridique de base sans lequel l'intervention n'existe pas." },
-            { theme: "Faute d'Exploitation", type: "Épreuve Écrite", question: "Suite à une surcharge, le Chef de Consignation effectue un transfert de charge sans informer le Dispatching. Qualification ?", options: ["Initiative proactive.", "Routine.", "Faute grave d'exploitation.", "Toléré de jour."], correctIndex: 2, justification: "Seul le Dispatching a l'autorité sur la topologie du réseau." },
-            { theme: "Communication", type: "Épreuve Écrite", question: "Le Dispatching ordonne l'ouverture. Le Chef de Poste répond : « D'accord j'ouvre ». Quelle règle de sécurité manque ?", options: ["Dire Terminé.", "Le message collationné (répétition intégrale).", "L'envoi d'un fax.", "Aucune."], correctIndex: 1, justification: "Le collationnement est obligatoire pour éviter les fausses manœuvres." },
-            { theme: "Habilitation", type: "Épreuve Écrite", question: "Un agent habilité 'HC' peut-il réparer physiquement un disjoncteur ?", options: ["Oui.", "Oui s'il est seul.", "Non, il faut une habilitation H2 (Travaux).", "Oui avec des gants isolants."], correctIndex: 2, justification: "HC = Consignation uniquement. H2 = Réalisation de travaux." },
-            { theme: "Manœuvres", type: "Épreuve Écrite", question: "Un Chef de Poste exécute l'ouverture d'un sectionneur de mémoire, sans cocher sa Fiche de Manœuvre. Conclusion ?", options: ["Oubli administratif.", "Sectionneur défectueux.", "Faute grave de manque de suivi pas-à-pas.", "Toléré."], correctIndex: 2, justification: "Le travail de mémoire est la cause numéro 1 des fausses manœuvres en HT." },
-            { theme: "Règles d'Or", type: "Simulation", question: "Le CDT a reçu l'AT et dit à son équipe de monter sur le pylône. Quelle étape vitale a-t-il oublié ?", options: ["Météo non vérifiée.", "Oubli de la Vérification d'Absence de Tension (VAT) et de la pose des MALT locales (Chantier).", "Pas de casque.", "Aucune."], correctIndex: 1, justification: "La VAT et les terres de chantier sont la responsabilité absolue du CDT pour protéger ses hommes." },
-            { theme: "Alarme SF6", type: "Simulation", question: "Sur un disjoncteur 400kV, l'alarme 'SF6 2ème Stade (Lockout)' retentit. Un défaut réseau survient. Que faire ?", options: ["Ouvrir manuellement le disjoncteur.", "Forcer la commande électrique.", "Isoler la travée via les disjoncteurs adjacents (Protection 50BF).", "Fermer les sectionneurs de terre."], correctIndex: 2, justification: "Le disjoncteur est verrouillé (Lockout) pour éviter une explosion mortelle car le gaz ne peut plus éteindre l'arc." },
-            { theme: "Transformateur", type: "Simulation", question: "Alarme Température huile Transfo Très Haute. Les ventilateurs sont à l'arrêt. Action prioritaire ?", options: ["Arroser d'eau.", "Demander un délestage immédiat au Dispatching pour réduire la charge.", "Mettre le régleur au minimum.", "Couper le neutre."], correctIndex: 1, justification: "Sans ventilation forcée, le transformateur perd 30% de sa capacité. Le délestage sauve l'appareil." },
-            { theme: "RSE (Régime Spécial)", type: "Épreuve Écrite", question: "Quel est l'objectif du Régime Spécial d'Exploitation (RSE) ?", options: ["Augmenter le transit.", "Empêcher tout réenclenchement (bloquer le 79) pour protéger les agents en Travaux Sous Tension (TST).", "Refroidir les câbles.", "Délestage automatique."], correctIndex: 1, justification: "Le RSE protège les équipes TST des réenclenchements automatiques ou volontaires en cas de défaut." },
-            { theme: "Incendie", type: "Simulation", question: "Feu déclaré sur un transformateur HT. Les gicleurs sont inopérants. Première action ?", options: ["Utiliser un extincteur à eau.", "S'assurer par VAT qu'il est HORS TENSION avant la lutte.", "Attendre les pompiers.", "Mettre du sable."], correctIndex: 1, justification: "Ne jamais projeter d'eau sur une installation électrique non séparée des sources." },
-            { theme: "VCC (Courant Continu)", type: "Simulation", question: "Perte totale du courant continu (127 VCC) au poste. Quel est le risque majeur ?", options: ["Perte d'éclairage.", "Perte totale du contrôle-commande et protections. Risque d'explosion du poste si un défaut réseau survient.", "Perte du téléphone.", "Perte de la climatisation."], correctIndex: 1, justification: "Le VCC alimente les relais et les bobines d'ouverture. Sans lui, le poste est paralysé." },
-            { theme: "Blackout", type: "Simulation", question: "En cas de Blackout total (Zéro tension), quelle est la première action de l'exploitant dans le poste ?", options: ["Attendre le Dispatching.", "Ouvrir impérativement tous les disjoncteurs (mise à plat) pour éviter un choc lors du retour de tension.", "Démarrer le groupe diesel.", "Fermer les sectionneurs de terre."], correctIndex: 1, justification: "La mise à plat empêche un 'Inrush' massif qui ferait redéclencher le réseau lors de sa reconstitution." },
-            { theme: "Couplage de Réseaux", type: "Épreuve Écrite", question: "Quelle est la condition de fréquence pour réaliser un couplage (reprise de parallèle) normal ?", options: ["Écart > 0.5 Hz.", "Écart inférieur ou égal à 0.2 Hz.", "Écart = 1 Hz.", "Pas d'importance."], correctIndex: 1, justification: "Un écart de glissement supérieur à 0.2 Hz créerait un choc violent sur les alternateurs." },
-            { theme: "Protection MALT", type: "Épreuve Écrite", question: "Lors de la dépose d'une Mise à la Terre (MALT/CC), dans quel ordre doit-on procéder ?", options: ["Terre d'abord, puis phases.", "Phases d'abord, puis la terre en tout dernier.", "Tirer le câble.", "Couper à la pince."], correctIndex: 1, justification: "On retire toujours les phases en premier. Si on retirait la terre d'abord, on s'exposerait à une tension induite mortelle." },
-            { theme: "Restitution d'ouvrage", type: "Épreuve Écrite", question: "Avis de Fin de Travail signé. Le CC trouve une caisse à outils oubliée sur les barres. Qui est fautif ?", options: ["Le CC.", "L'ouvrier.", "Le Chef de Travaux (CDT).", "Le Dispatching."], correctIndex: 2, justification: "En signant la fin d'AT, le CDT certifie avoir inspecté la zone et retiré tout le matériel et le personnel." }
-        ];
-
-        // 2. CONTRÔLE ÉLECTRIQUE (Protections, Automatismes, Moteurs, CCNA/Relais)
-        const poolControle = [
-            { theme: "Relais Buchholz", type: "Épreuve Écrite", question: "Quel est le rôle principal du relais Buchholz (63) sur un transformateur ?", options: ["Protéger des surcharges électriques externes.", "Détecter les défauts internes via le dégagement de gaz ou l'afflux d'huile.", "Régler la tension.", "Mesurer la puissance active."], correctIndex: 1, justification: "Il détecte la décomposition de l'huile causée par un arc interne ou un point chaud." },
-            { theme: "Relais Lockout (86)", type: "Épreuve Écrite", question: "Dans le schéma de protection, quelle est la fonction du relais ANSI 86 ?", options: ["Réenclencheur.", "Bloquer la fermeture du disjoncteur jusqu'à son réarmement manuel après un défaut majeur.", "Régulateur de tension.", "Relais de communication."], correctIndex: 1, justification: "Le Lockout empêche la remise sous tension accidentelle d'un transformateur en défaut." },
-            { theme: "Inrush Current", type: "Épreuve Écrite", question: "Qu'est-ce qui provoque souvent le déclenchement intempestif du relais différentiel (87T) lors de la mise sous tension d'un transfo ?", options: ["Le courant d'enclenchement magnétisant (Inrush) asymétrique.", "Le régleur en charge.", "La surtension de foudre.", "Un court-circuit externe."], correctIndex: 0, justification: "Le courant Inrush n'apparaît qu'au primaire, le relais 87T le voit donc comme un faux défaut interne. Il est bloqué par l'harmonique 2." },
-            { theme: "Automatisme (ELCB/RCD)", type: "Épreuve Écrite", question: "Quel est le but d'un disjoncteur différentiel résiduel (ELCB / RCD 30mA) dans un coffret BT ?", options: ["Protéger contre les surcharges.", "Protéger l'humain contre l'électrocution due aux courants de fuite à la terre.", "Inverser les phases.", "Protéger le moteur."], correctIndex: 1, justification: "Il mesure la différence entre la Phase et le Neutre. Si > 30mA (danger mortel), il coupe le circuit." },
-            { theme: "Protection Distance (21)", type: "Épreuve Écrite", question: "En protection de distance de ligne, qu'est-ce que le phénomène de 'Over-reach' (Dépassement de zone) ?", options: ["Refus de déclencher sur défaut.", "Déclenchement à tort pour un défaut situé hors de sa zone (ex: ligne adjacente) suite à une erreur de mesure d'impédance.", "Augmentation de la tension de ligne.", "Perte du signal CPL."], correctIndex: 1, justification: "Cela brise la sélectivité du réseau en déclenchant des lignes saines." },
-            { theme: "Défaillance Disjoncteur (50BF)", type: "Simulation", question: "Quel est le rôle de la protection 'Breaker Failure' (50BF) ?", options: ["Refermer la ligne.", "Mesurer l'usure mécanique.", "Si un disjoncteur refuse de s'ouvrir sur défaut, elle déclenche tous les disjoncteurs du jeu de barres pour isoler le nœud.", "Détecter le SF6."], correctIndex: 2, justification: "C'est la protection de secours ultime du poste (Local Backup)." },
-            { theme: "Protection Directionnelle (67)", type: "Épreuve Écrite", question: "Pourquoi utilise-t-on une protection de surintensité directionnelle (ANSI 67) ?", options: ["Pour mesurer l'énergie.", "Pour déclencher uniquement si le courant de défaut circule vers la zone protégée, assurant la sélectivité dans un réseau bouclé.", "Pour réduire le coût.", "Pour inverser les moteurs."], correctIndex: 1, justification: "Le relais 67 compare l'angle entre U et I pour déterminer le sens du défaut." },
-            { theme: "Moteurs Asynchrones", type: "Épreuve Écrite", question: "Dans un moteur triphasé à cage d'écureuil tournant à vide, que se passe-t-il électriquement ?", options: ["Le courant est nul.", "Il tire un fort courant réactif (jusqu'à 40% de In) pour sa magnétisation, d'où un facteur de puissance (Cos Phi) très faible.", "Le moteur tourne à l'envers.", "Le rotor chauffe énormément."], correctIndex: 1, justification: "Le courant de magnétisation fait chuter le Cos Phi proche de 0.2 à vide." },
-            { theme: "Relais Statiques (SSR)", type: "Épreuve Écrite", question: "Quel est l'avantage d'un Solid State Relay (SSR) en automatisation par rapport à un contacteur classique ?", options: ["Il est bruyant.", "Il n'a aucune pièce mécanique mobile, offrant une durée de vie quasi infinie et une commutation ultra-rapide sans étincelle.", "Il n'a pas besoin de refroidissement.", "Il produit des arcs."], correctIndex: 1, justification: "Utilisant des Thyristors ou Triacs, il ne s'use pas mécaniquement." },
-            { theme: "Compensation (Facteur Puissance)", type: "Épreuve Écrite", question: "Comment compense-t-on un mauvais facteur de puissance dans un réseau industriel ?", options: ["Avec des résistances en série.", "En connectant des condensateurs EN PARALLÈLE avec la charge pour fournir l'énergie réactive localement.", "En augmentant la fréquence.", "Avec de plus gros câbles."], correctIndex: 1, justification: "Les condensateurs produisent des kVAR, évitant de les soutirer du réseau THT." },
-            { theme: "Discordance de Pôles (52D)", type: "Simulation", question: "Un pôle fermé, deux ouverts sur un disjoncteur HT. Risque et action ?", options: ["Rien, la tension s'équilibre.", "Le relais 52D détecte l'asymétrie et force l'ouverture tripolaire pour éviter les courants homopolaires destructeurs pour les machines tournantes.", "Le disjoncteur explose.", "Le SCADA plante."], correctIndex: 1, justification: "Une discordance prolongée chauffe les rotors des générateurs du réseau." },
-            { theme: "Contrôle (Timers)", type: "Épreuve Écrite", question: "En logique de relais, comment fonctionne un temporisateur 'On-Delay' ?", options: ["Il ferme immédiatement et ouvre plus tard.", "Ses contacts changent d'état seulement APRÈS l'écoulement d'un délai programmé suite à sa mise sous tension.", "Il compte les impulsions.", "Il ignore le temps."], correctIndex: 1, justification: "Utilisé pour décaler les démarrages ou coordonner des protections." },
-            { theme: "Synchronisme (25)", type: "Épreuve Écrite", question: "Le relais de synchronisme (25) contrôle trois paramètres avant de fermer un disjoncteur de ligne :", options: ["Pression, température et SF6.", "La différence de Tension (ΔU), de Fréquence (Δf) et l'Angle de phase (Δθ) entre les deux côtés.", "La puissance active.", "La résistance de contact."], correctIndex: 1, justification: "Le couplage de deux réseaux asynchrones provoquerait un choc destructeur." },
-            { theme: "Puissance Inverse (32)", type: "Simulation", question: "Sur un alternateur, que protège le relais ANSI 32 (Reverse Power) ?", options: ["Contre les surtensions.", "Il empêche l'alternateur de se comporter comme un moteur électrique géant (pompant le réseau) s'il perd sa turbine d'entraînement.", "Il accélère la turbine.", "Il augmente l'excitation."], correctIndex: 1, justification: "La marche en moteur endommagerait la turbine (ex: pales de turbine à vapeur)." },
-            { theme: "Logique Câblée (Arrêt d'Urgence)", type: "Épreuve Écrite", question: "Pourquoi utilise-t-on TOUJOURS un contact Normalement Fermé (NC/NF) pour un bouton d'Arrêt d'Urgence ?", options: ["Le NF est moins cher.", "Pour la 'Sécurité Positive' : si le fil de commande se coupe accidentellement, le système s'arrêtera de lui-même.", "Pour économiser du courant.", "Pour la couleur rouge."], correctIndex: 1, justification: "Principe du Fail-Safe. Un fil coupé sur un contact NO rendrait l'arrêt inopérant." }
-        ];
-
-        // 3. MAINTENANCE POSTE (Huile, Terre, Batteries, GIS)
-        const poolMaintenance = [
-            { theme: "Rigidité Diélectrique (Huile)", type: "Simulation", question: "Quelle est la distance standard entre les électrodes lors du test de claquage de l'huile (IEC 156) ?", options: ["10 mm.", "2.5 mm.", "5 cm.", "1 mm."], correctIndex: 1, justification: "La norme IEC spécifie un écartement de 2.5 mm avec des électrodes sphériques pour garantir la reproductibilité du test (> 50kV)." },
-            { theme: "Analyse DGA (C2H2)", type: "Épreuve Écrite", question: "La présence d'Acétylène (C2H2) lors de l'analyse des gaz dissous indique :", options: ["Une chauffe normale du papier.", "Des décharges partielles mineures.", "L'existence d'un arc électrique de haute énergie (étincelle/court-circuit) à l'intérieur de la cuve.", "L'oxydation lente de l'huile."], correctIndex: 2, justification: "La formation d'Acétylène nécessite une température extrême (milliers de degrés), signature unique de l'arc électrique." },
-            { theme: "Silicagel", type: "Simulation", question: "Les granulés de Silicagel du reniflard sont devenus roses (ou transparents/blancs). Que faire ?", options: ["Ajouter de l'eau.", "Ne rien faire, c'est l'été.", "Programmer leur remplacement ou régénération car ils sont saturés en humidité.", "Dégazer le Buchholz."], correctIndex: 2, justification: "Le silicagel sec est bleu ou orange. Saturé, il ne protège plus le papier isolant de l'humidité atmosphérique." },
-            { theme: "Résistance de Contact (Micro-ohmmètre)", type: "Simulation", question: "Le test sur les pôles d'un disjoncteur fermé indique 450 µΩ (limite constructeur : 50 µΩ). Quel est le risque ?", options: ["Une fuite de SF6.", "Un échauffement thermique extrême (Point chaud) au passage du courant nominal, risquant l'incendie ou la fusion des contacts.", "La panne du moteur de réarmement.", "Aucun risque."], correctIndex: 1, justification: "Loi de Joule (P = R.I²). Une résistance élevée avec 2000A dissipera une chaleur destructive." },
-            { theme: "Tension de Pas (Step Voltage)", type: "Épreuve Écrite", question: "Lors d'un court-circuit à la terre, qu'est-ce que la Tension de Pas ?", options: ["La tension du câble.", "La différence de potentiel dangereuse créée entre les deux pieds d'une personne marchant sur le sol près du défaut.", "La tension nominale du réseau.", "La tension de la batterie."], correctIndex: 1, justification: "Le courant s'écoulant dans la terre crée un gradient de tension de surface mortel." },
-            { theme: "Gravier en Poste Extérieur", type: "Simulation", question: "Pourquoi la cour des postes THT est-elle recouverte d'une épaisse couche de gravier ?", options: ["Pour l'esthétique.", "Pour augmenter fortement la résistivité électrique du sol en surface, réduisant ainsi les courants mortels de tension de pas et de contact.", "Pour absorber les fuites d'huile.", "Pour éviter le gel."], correctIndex: 1, justification: "Le gravier sec agit comme une couche isolante vitale pour les opérateurs au sol." },
-            { theme: "Batteries VCC", type: "Épreuve Écrite", question: "Pourquoi les systèmes de contrôle-commande sont-ils alimentés par des batteries DC (110V/220V) ?", options: ["Le courant continu coûte moins cher.", "Pour garantir l'alimentation des relais et l'ouverture des disjoncteurs même lors d'un effondrement total du réseau alternatif (Sécurité absolue).", "Pour alimenter les PC portables.", "Pour éviter les harmoniques."], correctIndex: 1, justification: "C'est l'Ultimate Backup. Sans batteries, un poste en black-out ne pourrait ouvrir aucun disjoncteur sur défaut." },
-            { theme: "Extinction Incendie Salle Relais", type: "Épreuve Écrite", question: "Quel gaz d'extinction est privilégié dans les salles abritant l'électronique de contrôle (SCADA/Relais) ?", options: ["L'eau pulvérisée.", "Le CO2 ou le FM-200, car ils étouffent le feu sans laisser de résidus destructeurs pour les cartes électroniques.", "La poudre ABC.", "La mousse chimique."], correctIndex: 1, justification: "L'eau ou la poudre détruiraient irrémédiablement les composants électroniques." },
-            { theme: "Climatisation (HVAC)", type: "Épreuve Écrite", question: "Pourquoi la redondance de la climatisation est-elle critique dans la salle des relais d'un poste HT ?", options: ["Pour le confort du personnel.", "Pour empêcher la poussière.", "Les relais numériques et calculateurs plantent ou grillent rapidement au-dessus de 40°C, entraînant la perte de contrôle du poste.", "Pour évaporer l'humidité."], correctIndex: 2, justification: "La durée de vie de l'électronique IED chute drastiquement avec la chaleur." },
-            { theme: "Test SFRA", type: "Épreuve Écrite", question: "Que permet de détecter l'essai SFRA (Sweep Frequency Response Analysis) sur un transformateur ?", options: ["L'acidité de l'huile (TAN).", "Les déformations mécaniques ou déplacements physiques des bobines et du noyau suite à un court-circuit violent ou un choc de transport.", "Les micro-fuites de SF6.", "La température du cuivre."], correctIndex: 1, justification: "Le SFRA trace l'empreinte RLC du transformateur. Toute déformation physique modifie la fréquence de résonance." },
-            { theme: "Maintenance OLTC", type: "Épreuve Écrite", question: "Sur un Changeur de Prises en Charge (OLTC), quel compartiment nécessite le filtrage d'huile le plus fréquent ?", options: ["La cuve principale.", "Le compartiment de l'Interrupteur de Puissance (Diverter Switch) car il coupe le courant sous charge, créant des arcs qui carbonisent l'huile.", "Le radiateur.", "Le sélecteur de prises."], correctIndex: 1, justification: "Les arcs électriques normaux de commutation dégradent très vite l'huile de ce compartiment spécifique." },
-            { theme: "Groupes Électrogènes (Wet Stacking)", type: "Simulation", question: "Lors de l'essai mensuel du groupe diesel de secours, pourquoi est-il déconseillé de le faire tourner à vide ?", options: ["Pour économiser du carburant.", "Cela provoque le 'Glaçage des cylindres' (Wet Stacking), l'huile imbrûlée se déposant dans l'échappement par manque de chaleur.", "Cela démagnétise l'alternateur.", "Le démarreur brûle."], correctIndex: 1, justification: "Un moteur diesel a besoin d'être chargé (min 30%) pour atteindre sa température de combustion optimale." },
-            { theme: "GIS (SF6)", type: "Épreuve Écrite", question: "Lors de l'ouverture d'un compartiment de Poste Blindé GIS, l'agent doit porter un équipement étanche car :", options: ["Le SF6 pur est hautement toxique.", "L'air corrode l'aluminium.", "Les poudres blanches résiduelles (sous-produits de l'arc SF6) sont extrêmement toxiques et corrosives pour les voies respiratoires.", "Il fait très froid."], correctIndex: 2, justification: "Le SF6 pur est inerte, mais les fluorures métalliques créés par l'arc sont dangereux." },
-            { theme: "Décharges Partielles (DP)", type: "Épreuve Écrite", question: "Que sont les Décharges Partielles dans l'isolation d'un équipement HT ?", options: ["Des coups de foudre atténués.", "Des micro-arcs se produisant dans des vides d'air internes à l'isolant, qui rongent lentement le matériau jusqu'au claquage final.", "Des fuites d'huile.", "L'ouverture lente d'un contact."], correctIndex: 1, justification: "Les DP sont le \"cancer\" de l'isolation (câbles, transfos), dégradant l'équipement sur le long terme." },
-            { theme: "Résistance d'Enroulement (Transfo)", type: "Simulation", question: "Pourquoi mesure-t-on la résistance ohmique des enroulements (DC Winding) d'un transformateur ?", options: ["Pour calculer les pertes fer.", "Pour vérifier l'intégrité des connexions internes, et détecter un mauvais contact au niveau des prises (Taps) qui générerait un point chaud.", "Pour vérifier l'huile.", "Pour changer l'indice horaire."], correctIndex: 1, justification: "Une légère augmentation de résistance ohmique (milliohms) créera une chaleur énorme à pleine charge." }
-        ];
-
-        // 4. MAINTENANCE LIGNE (ML) (Pylônes, Sécurité en hauteur, Câbles)
-        const poolMaintenanceLigne = [
-            { theme: "Sécurité Téléphone", type: "Simulation", question: "Pourquoi l'utilisation du smartphone est-elle strictement interdite pendant la consignation (VAT, MALT) sur un pylône ?", options: ["Interférence radio avec le SCADA.", "La distraction (SMS, Appel) fait perdre la concentration lors d'étapes vitales, menant directement au non-respect des distances et à l'arc mortel.", "C'est un ordre administratif.", "Pour économiser la batterie."], correctIndex: 1, justification: "En THT, la distraction cognitive de quelques secondes cause les accidents les plus graves." },
-            { theme: "Sécurité (Point Mort)", type: "Simulation", question: "Qu'est-ce que l'erreur éliminatoire du 'Point Mort' en ascension de pylône ?", options: ["Faire une pause trop longue.", "Se déconnecter totalement (aucune longe attachée) pendant quelques secondes pour franchir un obstacle, se retrouvant sans protection antichute.", "Lâcher ses outils.", "Ne pas porter de lunettes."], correctIndex: 1, justification: "La règle de l'ancrage 100% continu nécessite l'usage d'une longe double (en Y). Le point mort est mortel." },
-            { theme: "Step Bolts (Boulons d'escalade)", type: "Simulation", question: "Peut-on ancrer le mousqueton de sa longe antichute sur les boulons d'escalade (Step bolts) du pylône ?", options: ["Oui, ils sont faits pour ça.", "Non, ils se cisailleraient sous la force dynamique gigantesque d'une chute (12 kN). L'ancrage se fait toujours sur les membrures principales de la structure.", "Oui, s'ils sont neufs.", "C'est au choix du lignard."], correctIndex: 1, justification: "Les step bolts ne supportent que le poids statique (les pieds)." },
-            { theme: "Lavage Isolateurs (Sous Tension)", type: "Simulation", question: "Dans quel sens doit-on impérativement arroser les isolateurs lors d'un lavage sous tension ?", options: ["Par le milieu.", "Du sommet (terre) vers le bas.", "Obligatoirement par le BAS (côté conducteur sous tension) en remontant progressivement vers la terre.", "Peu importe."], correctIndex: 2, justification: "Si on lave par le haut, l'eau sale ruisselle sur les jupes inférieures, créant un flashover (court-circuit) immédiat." },
-            { theme: "Qualité d'Eau (Lavage)", type: "Épreuve Écrite", question: "Quel paramètre de l'eau est vital pour autoriser le lavage sous tension ?", options: ["Son goût.", "Son pH.", "Sa conductivité électrique, qui doit être d'une pureté extrême (eau déminéralisée, ex: < 50 µS/cm).", "Sa densité."], correctIndex: 2, justification: "Utiliser de l'eau du réseau (conductrice) guiderait l'arc électrique HT jusqu'au camion du lignard." },
-            { theme: "Effet Couronne", type: "Épreuve Écrite", question: "Qu'est-ce que l'Effet Couronne (Corona Effect) visible sur les lignes THT ?", options: ["Le reflet du soleil sur le câble.", "L'ionisation (claquage) de l'air entourant le conducteur due au champ électrique très intense (crépitement, ozone, lueur bleutée).", "Un dépôt de givre.", "Un défaut d'ancrage."], correctIndex: 1, justification: "Il cause des pertes de puissance active et des interférences radio." },
-            { theme: "Faisceaux de Câbles (Bundle)", type: "Épreuve Écrite", question: "Pourquoi regrouper 2, 3 ou 4 câbles par phase en 400kV au lieu d'un seul gros câble ?", options: ["Pour résister aux tempêtes.", "Pour augmenter le diamètre virtuel de la phase, ce qui réduit considérablement le gradient de champ électrique en surface et limite l'effet Couronne.", "Pour faire fuir les oiseaux.", "Pour baisser la résistance mécanique."], correctIndex: 1, justification: "Adoucit le champ de surface, rendant la ligne plus efficace et silencieuse." },
-            { theme: "Flèche (Sag) et Température", type: "Épreuve Écrite", question: "Que subit physiquement le conducteur en plein été sous un fort transit de courant ?", options: ["Il rétrécit.", "Il gèle.", "Il subit une dilatation thermique, sa longueur augmente, ce qui FAIT AUGMENTER la flèche (Sag) et diminue dangereusement la garde au sol.", "Sa tension mécanique s'accroît."], correctIndex: 2, justification: "La dilatation excessive cause des blackout par amorçage sur la végétation en contrebas." },
-            { theme: "Effet Ferranti", type: "Simulation", question: "Lors de la mise sous tension d'une ligne longue 400kV à VIDE (sans charge), l'Effet Ferranti se manifeste par :", options: ["Une chute de tension massive.", "La tension à l'arrivée (récepteur) devient SUPÉRIEURE à la tension de départ (source).", "La ligne tremble.", "Coupure de phase."], correctIndex: 1, justification: "L'effet capacitif de la ligne à vide élève la tension, nécessitant des bobines de réactance (Shunt Reactors) pour compenser." },
-            { theme: "Parafoudres Polymères", type: "Épreuve Écrite", question: "Quel est l'avantage principal du parafoudre ZnO à enveloppe silicone/polymère par rapport à la porcelaine ?", options: ["Il est beaucoup plus lourd.", "Il est hydrophobe (repousse l'eau et la pollution) et n'éclate pas en morceaux tranchants mortels en cas d'explosion interne.", "Il est moins cher.", "Il est inflammable."], correctIndex: 1, justification: "Le silicone maintient l'isolation même sous forte pollution marine ou désertique." },
-            { theme: "Amortisseurs (Stockbridge)", type: "Épreuve Écrite", question: "Quel est le rôle des amortisseurs en forme d'haltères fixés sur les câbles près des pylônes ?", options: ["Faire un contrepoids pour la flèche.", "Dissiper l'énergie des vibrations éoliennes (vent léger) pour empêcher la rupture par fatigue des brins d'aluminium du câble au point d'ancrage.", "Attirer la foudre.", "Améliorer le passage du courant."], correctIndex: 1, justification: "Ils protègent le câble des vibrations de haute fréquence (Tourbillons de Karman)." },
-            { theme: "Pylônes 400kV (Extensions)", type: "Simulation", question: "Si le sol est en pente, comment ajuste-t-on la base du pylône 400kV ?", options: ["On coule plus de ciment.", "On utilise des haubans.", "On installe des extensions de pieds (Leg extensions) de différentes longueurs (ex: +1.5m, +3m).", "On tord l'acier."], correctIndex: 2, justification: "Cela permet de garder le corps du pylône parfaitement vertical sans travaux de terrassement massifs." },
-            { theme: "Pylône d'Arrêt (Tension Tower)", type: "Épreuve Écrite", question: "Quelle est la principale différence de contrainte entre un pylône de Suspension et un pylône d'Arrêt (Angle) ?", options: ["Le pylône d'arrêt est en bois.", "Le pylône d'Arrêt résiste à la forte tension mécanique longitudinale (traction) des câbles, nécessitant des fondations massives contre l'arrachement (Uplift).", "Il n'y a aucune différence.", "Le pylône d'arrêt n'a pas de terre."], correctIndex: 1, justification: "Les pylônes d'arrêt 'tirent' le câble, alors que ceux de suspension ne font que supporter le poids vertical." },
-            { theme: "Isolateurs (Corona Ring)", type: "Épreuve Écrite", question: "À quoi servent les anneaux métalliques (Corona rings) aux extrémités des chaînes d'isolateurs THT ?", options: ["À accrocher les poulies.", "À répartir uniformément le gradient de tension électrique sur les premières jupes, protégeant l'isolateur de l'étincelage.", "À faire du poids.", "À repousser la pluie."], correctIndex: 1, justification: "Adoucit le champ électrique énorme au niveau de la fixation du câble THT." },
-            { theme: "Harnais de Sécurité", type: "Simulation", question: "Quel est le risque si les sangles de cuisses du harnais antichute sont trop lâches ?", options: ["Le lignard aura froid.", "Le pantalon se déchire.", "En cas de chute, les sangles remontent violemment dans l'aine, causant des traumatismes artériels graves et accélérant le syndrome du harnais.", "Le mousqueton se bloque."], correctIndex: 2, justification: "Un harnais doit être ajusté près du corps pour répartir la force de choc sur le squelette solide." }
-        ];
-
-        // 5. CE ESSAIS / ANALYSES (Commissioning, Injection, Câbles, TDR)
-        const poolEssaisAnalyses = [
-            { theme: "Polarité TC", type: "Simulation", question: "Test Flick (Pile 9V) sur un TC. Si la polarité (P1-P2/S1-S2) est correcte, que fait le galvanomètre à la fermeture ?", options: ["L'aiguille ne bouge pas.", "Elle dévie brusquement dans le sens positif (droite) puis revient à zéro.", "Elle dévie en négatif (gauche).", "Elle oscille continuellement."], correctIndex: 1, justification: "L'induction (Loi de Lenz) crée un pulse positif si le câblage respecte les bornes homologues." },
-            { theme: "Danger TC Ouvert", type: "Simulation", question: "Le circuit secondaire d'un TC en service est accidentellement laissé OUVERT. Conséquence ?", options: ["Le relais déclenche le poste.", "Le noyau magnétique sature instantanément, induisant des pics de tension de plusieurs kV aux bornes ouvertes, détruisant l'isolant et menaçant l'opérateur de mort.", "Le courant réseau s'effondre.", "L'huile du TC gèle."], correctIndex: 1, justification: "Sans courant secondaire pour démagnétiser le noyau, la tension induite (e = N.dΦ/dt) explose." },
-            { theme: "Danger TT Court-Circuité", type: "Simulation", question: "Que se passe-t-il si un technicien crée un court-circuit franc aux bornes secondaires d'un Transformateur de Tension (TT) sous tension ?", options: ["Rien, le TT encaisse.", "Un courant énorme va y circuler, brûlant le bobinage et pouvant faire exploser le TT si les fusibles (MCB) ne fondent pas.", "La tension primaire augmente.", "Le relais de distance plante."], correctIndex: 1, justification: "Le TT est une source de tension. Un court-circuit secondaire équivaut à un I=U/Z massif." },
-            { theme: "Injection Primaire", type: "Épreuve Écrite", question: "Quel est l'objectif ultime de l'essai d'injection primaire lors du Commissioning d'un poste ?", options: ["C'est plus rapide que la secondaire.", "Tester l'IHM du relais.", "Valider l'intégrité de TOUTE la chaîne (Rapport physique du TC, filerie, polarité réelle, et déclenchement effectif du disjoncteur HT).", "Tester la température."], correctIndex: 2, justification: "C'est l'essai global 'End-to-End' qui garantit qu'il n'y a aucune erreur de câblage sur le terrain." },
-            { theme: "Test Câbles (VLF vs DC)", type: "Épreuve Écrite", question: "Pourquoi les normes exigent-elles de tester les câbles XLPE synthétiques en VLF (0.1 Hz) et non en Hipot DC ?", options: ["Le VLF est plus rapide.", "Le test DC piège des charges d'espace dans le plastique XLPE, provoquant son claquage irréversible à la remise sous tension AC (phénomène de Water treeing).", "Le VLF a plus de tension.", "Le DC est illégal en Algérie."], correctIndex: 1, justification: "L'application de DC sur du polymère détériore la durée de vie du câble sain." },
-            { theme: "Localisation (TDR / Échomètre)", type: "Épreuve Écrite", question: "Rôle de l'échomètre (TDR) en recherche de défauts de câbles ?", options: ["Brûler l'isolant du câble.", "Envoyer une impulsion basse tension pour mesurer le temps de retour de l'écho, permettant de calculer la DISTANCE du défaut (Pré-localisation).", "Écouter l'arc sous terre.", "Mesurer l'humidité."], correctIndex: 1, justification: "Le TDR analyse la réflexion de l'onde pour donner une distance en mètres (ex: Défaut à 450m)." },
-            { theme: "Localisation (Thumper)", type: "Simulation", question: "À quoi sert le Générateur d'ondes de choc (Thumper / Éclateur) couplé à un géophone ?", options: ["Nettoyer le câble.", "Localiser le défaut avec précision (Pinpointing) en créant un arc bruyant sous terre, écouté en surface par l'opérateur.", "Mesurer la terre du poste.", "Refroidir l'isolant fondu."], correctIndex: 1, justification: "Permet de marquer le sol exactement au-dessus du défaut avant de creuser." },
-            { theme: "Charge TC (Burden Test)", type: "Épreuve Écrite", question: "Lors du 'Burden Test', si la charge réelle de la filerie+relais dépasse la valeur en VA plaquée sur le TC :", options: ["Le TC deviendra plus précis.", "Le TC saturera prématurément lors d'un court-circuit, empêchant la protection de voir la vraie valeur du courant de défaut.", "La tension du poste chutera.", "Aucun impact."], correctIndex: 1, justification: "Le TC n'aura pas la puissance magnétique nécessaire pour pousser le courant dans une impédance trop forte." },
-            { theme: "Mesure de Terre (3 Piquets)", type: "Épreuve Écrite", question: "Lors de la méthode 'Fall of Potential', où doit-on planter le piquet de courant (C2) par rapport au maillage du poste ?", options: ["À 2 mètres du grillage.", "Dans le bâtiment de commande.", "Le plus loin possible (ex: >100m) pour que les zones d'influence de la grille du poste et du piquet C2 ne se chevauchent pas.", "Sur le transformateur."], correctIndex: 2, justification: "Une distance insuffisante fausse la courbe qui ne présentera aucun palier de vraie résistance." },
-            { theme: "Test DRM Disjoncteur", type: "Épreuve Écrite", question: "Que permet de visualiser la mesure de Résistance Dynamique (DRM) sur un disjoncteur SF6 ?", options: ["La résistance statique à l'arrêt.", "La résistance EN COURS de mouvement (ouverture), permettant de diagnostiquer l'usure cachée de la pointe d'arc en tungstène (Arcing Contact).", "La résistance de la bobine.", "La pression du gaz."], correctIndex: 1, justification: "Diagnostic vital pour évaluer l'usure interne des contacts sans avoir à récupérer le gaz SF6." },
-            { theme: "Test GOOSE (IEC 61850)", type: "Simulation", question: "Comment tester un interverrouillage GOOSE entre deux baies numériques ?", options: ["Avec un multimètre sur les câbles.", "Avec une pince ampèremétrique.", "À l'aide d'un analyseur de réseau (ex: Wireshark/IEDScout) branché sur le switch Ethernet pour lire le changement d'état de la variable booléenne.", "En augmentant la tension HT."], correctIndex: 2, justification: "L'information transite sous forme de trames logicielles sur le réseau local (LAN)." },
-            { theme: "Phasage (Concordance)", type: "Simulation", question: "Avant la première mise en parallèle d'un transfo neuf avec le réseau, le test le plus critique est :", options: ["Le test de bruit.", "Le test de concordance de phases (Phasing), prouvant que la Phase A du transfo correspond exactement à la Phase A du réseau.", "L'analyse DGA de l'huile.", "Le test du relais Buchholz."], correctIndex: 1, justification: "Si les phases sont inversées, la fermeture du disjoncteur causera une explosion cataclysmique (Court-circuit franc)." },
-            { theme: "Saturation 87B", type: "Simulation", question: "Dans le test de stabilité d'une protection différentielle de barre (87B), on injecte un courant traversant (Through-fault). Pourquoi ?", options: ["Pour chauffer la barre.", "Pour s'assurer que si un TC sature sur un défaut EXTERNE, le relais lit bien Zéro (Idiff) et ne purge pas tout le poste à tort.", "Pour tester l'affichage IHM.", "Pour vérifier le SF6."], correctIndex: 1, justification: "Un défaut externe crée un fort courant. La saturation d'un TC crée une erreur lue comme un défaut interne. Le relais doit être stabilisé." },
-            { theme: "Synchronisme (25)", type: "Épreuve Écrite", question: "Pendant le test du relais de synchronisme (ANSI 25), quels Deltas (Δ) fait-on varier pour trouver les seuils de blocage ?", options: ["La pression, le volume, la température.", "Le Delta-Voltage (ΔV), Delta-Fréquence (Δf) et Delta-Angle (Δθ) entre la ligne et la barre.", "Les harmoniques 3, 5, 7.", "Les courants I1, I2, I0."], correctIndex: 1, justification: "Le relais bloque la fermeture si l'un de ces trois écarts entre les deux réseaux est trop grand." },
-            { theme: "Megger & PI", type: "Épreuve Écrite", question: "Lors d'un test Megger (5000V DC) sur un transfo, le calcul du PI (Index de Polarisation) donne 1.05. Conclusion ?", options: ["L'isolant est parfait.", "L'isolant (papier/huile) est fortement humide ou pollué. Ne pas mettre sous tension.", "Le testeur n'a plus de batterie.", "C'est normal en hiver."], correctIndex: 1, justification: "Un PI sain (bonne absorption diélectrique) est > 1.5. Un PI proche de 1 indique un courant de fuite fort et continu (Humidité/Danger)." }
-        ];
-
-        // 6. TÉLÉCOM & TÉLÉCONDUITE (Bilingue + SCADA, OPGW, CCNA, Réseaux)
-        const poolTelecom = [
-            { 
-                theme: "Réseaux / الشبكات (CCNA)", 
-                type: "Épreuve Écrite", 
-                question: "Quelle est la principale différence entre un Switch (commutateur) et un Hub (concentrateur) ?<br><br><span class='text-sonelgaz-orange font-arabic text-lg'>ما هو الفرق الرئيسي بين المحول (Switch) والموزع (Hub)؟</span>", 
-                options: [
-                    "Le Hub filtre les paquets par adresse MAC, le Switch non. / الموزع يفلتر الحزم عبر عنوان MAC، المحول لا.", 
-                    "Le Switch envoie les données uniquement au port de destination (via table MAC), évitant les collisions, alors que le Hub diffuse à tous les ports. / المحول يرسل البيانات فقط إلى منفذ الوجهة (عبر جدول MAC) لتجنب التصادم، بينما يوزع الـ Hub للجميع.", 
-                    "Le Switch ne fonctionne qu'en Wi-Fi. / المحول يعمل فقط عبر الواي فاي.", 
-                    "Le Hub est plus rapide. / الموزع أسرع."
-                ], 
-                correctIndex: 1, 
-                justification: "Le Switch opère au niveau 2 (Liaison de données) et réduit les domaines de collision. / يعمل المحول في الطبقة الثانية ويقلل من نطاقات التصادم.",
-                image: "[Image de : Un schéma illustrant la diffusion globale d'un Hub vs la transmission ciblée d'un Switch via Table MAC]"
-            },
-            { 
-                theme: "Téléconduite / التحكم الإشرافي (SCADA)", 
-                type: "Épreuve Écrite", 
-                question: "Dans une architecture SCADA, quel est le rôle du RTU (Remote Terminal Unit) ?<br><br><span class='text-sonelgaz-orange font-arabic text-lg'>في معمارية سكادا، ما هو دور الوحدة الطرفية عن بعد (RTU)؟</span>", 
-                options: [
-                    "Produire de l'énergie réactive. / توليد الطاقة التفاعلية.", 
-                    "Collecter les signaux physiques (capteurs, relais) du poste et les numériser pour les transmettre au centre de contrôle (Dispatching). / جمع البيانات الفيزيائية في المحطة وإرسالها إلى مركز التحكم.", 
-                    "Remplacer le disjoncteur HT. / استبدال قاطع الدورة.", 
-                    "Chiffrer les données Wi-Fi. / تشفير بيانات الواي فاي."
-                ], 
-                correctIndex: 1, 
-                justification: "Le RTU est l'interface vitale entre l'équipement physique de la sous-station et le réseau de télécommunication. / الـ RTU هو الواجهة الحيوية بين المعدات الفيزيائية وشبكة الاتصالات.",
-                image: "[Image de : Schéma montrant des relais connectés à un RTU, lui-même relié à un centre SCADA]"
-            },
-            { 
-                theme: "Télécommunication (CPL / PLC)", 
-                type: "Épreuve Écrite", 
-                question: "À quoi sert un 'Bouchon de Ligne' (Line Trap / Wave Trap) suspendu aux portiques THT ?<br><br><span class='text-sonelgaz-orange font-arabic text-lg'>ما هي فائدة 'مانع الذبذبات' (Line Trap) المثبت على هياكل الضغط العالي؟</span>", 
-                options: [
-                    "Filtrer les impuretés de l'huile. / تصفية شوائب الزيت.", 
-                    "Empêcher le courant 50 Hz de passer. / منع مرور تيار 50 هرتز.", 
-                    "Bloquer les signaux de télécommunication haute fréquence (CPL) pour qu'ils ne se perdent pas dans le poste, tout en laissant passer la puissance (50 Hz). / حجب إشارات الاتصالات عالية التردد (CPL) لكي لا تضيع في المحطة، مع السماح بمرور الطاقة.", 
-                    "Attirer la foudre. / جذب الصواعق."
-                ], 
-                correctIndex: 2, 
-                justification: "Le Bouchon de ligne agit comme une haute impédance pour les hautes fréquences (Data) et une faible impédance pour la puissance. / يعمل كممانعة عالية للبيانات وممانعة منخفضة للطاقة.",
-                image: "[Image de : Photo d'un Bouchon de Ligne (cylindre) avec son schéma équivalent RLC]"
-            },
-            { 
-                theme: "Fibre Optique / الألياف البصرية (OPGW)", 
-                type: "Simulation", 
-                question: "Sur une ligne aérienne HT, quel est le double rôle du câble OPGW (Optical Ground Wire) situé au sommet ?<br><br><span class='text-sonelgaz-orange font-arabic text-lg'>على خط النقل الهوائي، ما هو الدور المزدوج لكابل OPGW؟</span>", 
-                options: [
-                    "Transporter les phases A et B. / نقل الأطوار A و B.", 
-                    "Protéger la ligne contre la foudre (fil de garde) ET transmettre des données à très haut débit (fibres optiques internes). / حماية الخط من الصواعق ونقل البيانات بسرعة عالية.", 
-                    "Éviter les vibrations éoliennes. / منع الاهتزازات الهوائية.", 
-                    "Mesurer la température. / قياس درجة الحرارة."
-                ], 
-                correctIndex: 1, 
-                justification: "L'OPGW mutualise l'infrastructure : le tube en acier/aluminium protège de la foudre, et le cœur en fibre achemine la téléprotection et le SCADA. / يجمع بين حماية الصواعق ونقل البيانات.",
-                image: "[Image de : Coupe transversale d'un câble OPGW montrant les brins d'acier externes et les fibres optiques au centre]"
-            },
-            { 
-                theme: "Protocoles / البروتوكولات (IEC 60870-5)", 
-                type: "Épreuve Écrite", 
-                question: "Quelle est la principale différence de transport entre l'IEC 60870-5-101 et l'IEC 60870-5-104 ?<br><br><span class='text-sonelgaz-orange font-arabic text-lg'>ما هو الفرق الرئيسي بين بروتوكول 101 و 104 في معيار IEC 60870؟</span>", 
-                options: [
-                    "Le 101 est pour le gaz, le 104 pour l'électricité. / 101 للغاز و 104 للكهرباء.", 
-                    "Le 101 utilise des liaisons séries asynchrones (RS-232/485), tandis que le 104 transporte ces données encapsulées sur des réseaux TCP/IP (Ethernet/LAN/WAN). / 101 يستخدم روابط تسلسلية، بينما 104 ينقل البيانات عبر شبكات TCP/IP.", 
-                    "Le 104 est analogique, le 101 est numérique. / 104 تناظري، 101 رقمي.", 
-                    "Aucune différence. / لا يوجد فرق."
-                ], 
-                correctIndex: 1, 
-                justification: "L'IEC-104 a révolutionné la téléconduite en permettant d'utiliser l'infrastructure réseau IP standard des entreprises pour le transport SCADA. / بروتوكول 104 استخدم شبكات IP القياسية للتحكم."
-            },
-            { 
-                theme: "Protocoles / البروتوكولات (DNP3)", 
-                type: "Épreuve Écrite", 
-                question: "Dans le protocole DNP3, à quoi sert le mécanisme 'Report By Exception' (Unsolicited Response) ?<br><br><span class='text-sonelgaz-orange font-arabic text-lg'>في بروتوكول DNP3، ما هي فائدة آلية 'الرد غير المطلوب' (Report By Exception)؟</span>", 
-                options: [
-                    "Imprimer des rapports PDF. / طباعة تقارير PDF.", 
-                    "Le RTU n'attend pas d'être interrogé (Polled) par le SCADA; il envoie spontanément les données uniquement lorsqu'il y a un changement d'état (événement), économisant la bande passante. / الوحدة لا تنتظر طلب المركز، بل ترسل البيانات تلقائياً فقط عند حدوث تغيير، لتوفير عرض النطاق الترددي.", 
-                    "Forcer le redémarrage du RTU. / فرض إعادة تشغيل الوحدة.", 
-                    "Changer l'adresse IP. / تغيير عنوان IP."
-                ], 
-                correctIndex: 1, 
-                justification: "C'est l'un des grands avantages du DNP3 par rapport au vieux Modbus. / ميزة كبرى مقارنة بـ Modbus القديم."
-            },
-            { 
-                theme: "Réseaux / الشبكات (VLAN)", 
-                type: "Simulation", 
-                question: "En configuration de Switch (CCNA), pourquoi crée-t-on des VLANs (Virtual LAN) dans une sous-station numérique ?<br><br><span class='text-sonelgaz-orange font-arabic text-lg'>لماذا نقوم بإنشاء شبكات VLAN على محولات المحطة الرقمية؟</span>", 
-                options: [
-                    "Pour augmenter la consommation d'énergie. / لزيادة استهلاك الطاقة.", 
-                    "Pour séparer logiquement les trafics (ex: Ségréguer le trafic SCADA critique de la Vidéo-surveillance) afin d'améliorer la cybersécurité et de réduire les tempêtes de diffusion (Broadcast). / لفصل حركات المرور منطقياً (مثل فصل بيانات سكادا عن كاميرات المراقبة) لتحسين الأمان.", 
-                    "Pour changer l'adresse MAC. / لتغيير عنوان MAC.", 
-                    "Pour transformer le switch en routeur. / لتحويل المحول إلى موجه."
-                ], 
-                correctIndex: 1, 
-                justification: "Les VLANs assurent que les données vitales (GOOSE/SCADA) ne soient pas ralenties par une caméra IP bavarde. / شبكات VLAN تضمن عدم تأثر البيانات الحيوية بالكاميرات.",
-                image: "[Image de : Un Switch divisé en couleurs (VLAN 10 SCADA, VLAN 20 Vidéo)]"
-            },
-            { 
-                theme: "Cybersécurité / الأمن السيبراني", 
-                type: "Épreuve Écrite", 
-                question: "Quelle est la vulnérabilité majeure des anciens protocoles (Modbus RTU, DNP3 classique) utilisés en milieu industriel ?<br><br><span class='text-sonelgaz-orange font-arabic text-lg'>ما هي الثغرة الأمنية الكبرى في بروتوكولات سكادا القديمة؟</span>", 
-                options: [
-                    "Ils sont trop lents. / بطيئة جداً.", 
-                    "Ils transmettent les données et commandes en texte clair (Clear Text), sans chiffrement ni authentification, rendant le réseau vulnérable à l'interception et l'injection de fausses commandes. / تنقل الأوامر كنص عادي (بدون تشفير)، مما يجعلها عرضة للقرصنة وتزييف الأوامر.", 
-                    "Ils utilisent trop de RAM. / تستهلك الكثير من الذاكرة.", 
-                    "Ils bloquent les pare-feux. / تعطل جدران الحماية."
-                ], 
-                correctIndex: 1, 
-                justification: "C'est pourquoi la mise en place de VPNs (IPSec) et de Firewalls industriels autour des réseaux OT (Operation Technology) est devenue vitale. / لذلك أصبح استخدام الشبكات الافتراضية الخاصة (VPN) إلزامياً."
-            },
-            { 
-                theme: "Télécom (Multiplexage SDH)", 
-                type: "Épreuve Écrite", 
-                question: "Dans les réseaux de transport optique inter-postes (SDH/PDH), que signifie le 'Multiplexage' ?<br><br><span class='text-sonelgaz-orange font-arabic text-lg'>في شبكات النقل البصري، ماذا يعني تعدد الإرسال (Multiplexing)؟</span>", 
-                options: [
-                    "Multiplier la tension HT. / مضاعفة الجهد.", 
-                    "Combiner plusieurs signaux lents (voix, SCADA, téléprotection) dans une seule trame à haut débit (STM-1/STM-4) sur une même fibre optique pour optimiser le média. / دمج عدة إشارات بيانات في وسط فيزيائي واحد لتحسين السعة.", 
-                    "Couper la fibre en deux. / قطع الألياف إلى نصفين.", 
-                    "Supprimer le chiffrement. / إزالة التشفير."
-                ], 
-                correctIndex: 1, 
-                justification: "Le multiplexeur (MUX) rassemble les différents services de la sous-station pour les envoyer sur le backbone national. / جهاز الـ Mux يجمع الخدمات لإرسالها عبر الشبكة الوطنية."
-            },
-            { 
-                theme: "Fiabilité / الموثوقية (Redondance)", 
-                type: "Simulation", 
-                question: "Que signifie une architecture 'Hot-Standby' pour des serveurs SCADA ou des Routeurs ?<br><br><span class='text-sonelgaz-orange font-arabic text-lg'>ماذا تعني معمارية 'Hot-Standby' لخوادم سكادا؟</span>", 
-                options: [
-                    "Les deux serveurs sont éteints pour refroidir. / الخادمان مغلقان للتبريد.", 
-                    "Le serveur principal (Master) gère le trafic, tandis que le secondaire (Standby) est allumé, synchronisé, et prend automatiquement le relais (Failover) en quelques millisecondes si le principal tombe en panne. / الخادم الرئيسي نشط، والاحتياطي يعمل ويزامن البيانات ليتولى المهمة تلقائياً في حال الفشل.", 
-                    "Partage de charge 50/50. / يتقاسمان الحمل 50/50.", 
-                    "Connexion Bluetooth. / اتصال بلوتوث."
-                ], 
-                correctIndex: 1, 
-                justification: "Cette redondance (ex: HSRP/VRRP en Cisco) garantit que le Dispatching ne devienne jamais 'Aveugle' (Blind) suite à une simple panne matérielle. / يضمن هذا النظام عدم فقدان مركز التحكم للرؤية أبداً."
-            },
-            {
-                theme: "Matériel (UPS)", 
-                type: "Épreuve Écrite", 
-                question: "Pourquoi les équipements Télécom et SCADA d'un poste HT doivent-ils être alimentés par un UPS (Uninterruptible Power Supply) avec batteries 48V ou 110V DC ?<br><br><span class='text-sonelgaz-orange font-arabic text-lg'>لماذا يجب تغذية معدات الاتصالات وسكادا بنظام UPS (طاقة غير منقطعة)؟</span>", 
-                options: [
-                    "Pour améliorer la vitesse d'Internet. / لتحسين سرعة الإنترنت.", 
-                    "Pour garantir la transmission des données et alarmes vers le Dispatching même en cas de Black-out (perte totale du réseau AC local). / لضمان نقل البيانات والإنذارات إلى مركز التحكم حتى في حالة الانقطاع التام للكهرباء.", 
-                    "Pour protéger contre les virus. / للحماية من الفيروسات.", 
-                    "Pour refroidir l'équipement. / لتبريد المعدات."
-                ], 
-                correctIndex: 1, 
-                justification: "Sans UPS et batteries, le Dispatching perdrait la supervision (télémétrie) de la sous-station au moment le plus critique (Défaut réseau). / بدون البطاريات، سيفقد المركز السيطرة في أهم اللحظات."
-            }
-        ];
-
-        /* ================= GESTION DE L'ÉTAT ET LOGIQUE ================= */
-        let appState = {
-            mode: 'declaratif', id: "", nom: "", prenom: "", matricule: "", societe: "", poste: "", service: "", district: "",
-            currentQuestion: 0, answers: [], score: 0, testQuestions: [], timeRemaining: 3600, timerInterval: null,
-            webcamActive: false, mediaStream: null, audioContext: null, analyser: null
+        // --- ICONES ---
+        const Icons = {
+            Flame: ({className}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M8.5 14.5A2.5 2.5 0 0011 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 11-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 002.5 2.5z"/></svg>,
+            Server: ({className}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>,
+            CheckSquare: ({className}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>,
+            Activity: ({className}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>,
+            Shield: ({className}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>,
+            Gauge: ({className}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M12 14.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/><path d="M17.657 18.657A8 8 0 0 1 6.343 7.343l.707.707"/><path d="M12 2v2"/><path d="M22 12h-2"/><path d="M12 12 8 8"/></svg>,
+            Play: ({className}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
+            Refresh: ({className}) => <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
         };
 
-        window.allCandidatesResults = JSON.parse(localStorage.getItem('sonelgaz_results')) || [];
-        const appContainer = document.getElementById('app-container');
+        // ==========================================
+        // BASE DE DONNÉES QCM (100 QUESTIONS GAZ)
+        // ==========================================
+        const rawGasQCMData = `
+Q1. Quelle est la principale composante du gaz naturel ?
+A) Le Propane
+B) Le Butane
+C) Le Méthane (CH4)
+D) Le Monoxyde de carbone
+Réponse : C - Justification : Le gaz naturel est composé à plus de 90% de méthane (CH4).
+Q2. Quel est le produit chimique ajouté au gaz naturel pour lui donner son odeur caractéristique ?
+A) L'éthanol
+B) Le Tétrahydrothiophène (THT) ou Mercaptan
+C) Le Chlore
+D) Le Soufre pur
+Réponse : B - Justification : Le gaz naturel est inodore. Le THT est injecté pour la sécurité (détection de fuites à 20% de la LIE).
+Q3. Que signifie l'acronyme LIE ?
+A) Limite Inférieure d'Explosivité
+B) Ligne Interne Électrique
+C) Limite d'Intervention Externe
+D) Localisation Incendie Évidente
+Réponse : A - Justification : C'est la concentration minimale de gaz dans l'air (environ 5% pour le méthane) pour qu'il y ait explosion.
+Q4. Que signifie l'acronyme LSE ?
+A) Limite Supérieure d'Explosivité
+B) Ligne Standard Étanche
+C) Local Sans Électricité
+D) Lumière Sans Énergie
+Réponse : A - Justification : C'est la concentration maximale de gaz dans l'air (environ 15% pour le méthane) au-delà de laquelle le mélange est trop riche pour exploser.
+Q5. Quelle est la densité du gaz naturel par rapport à l'air ?
+A) Il est plus lourd (d = 1.5)
+B) Il a la même densité (d = 1)
+C) Il est plus léger (d ≈ 0.6)
+D) Il est liquide
+Réponse : C - Justification : En cas de fuite, le gaz naturel monte et s'accumule dans les points hauts.
+Q6. Dans la distribution Sonelgaz, quelle pression définit la Basse Pression (BP) ?
+A) 21 mbar (ou 20 mbar)
+B) 4 bar
+C) 70 bar
+D) 100 mbar
+Réponse : A - Justification : La BP utilisée pour les abonnés domestiques est de 21 mbar.
+Q7. Quelle est la plage de la Moyenne Pression type B (MPB) selon les normes de distribution ?
+A) De 50 mbar à 4 bar
+B) De 4 bar à 16 bar
+C) De 16 bar à 70 bar
+D) Moins de 20 mbar
+Réponse : A - Justification : Le réseau de distribution urbain principal en MPB fonctionne jusqu'à 4 bar.
+Q8. Quelle est la couleur normalisée du grillage avertisseur pour une conduite de Gaz ?
+A) Rouge
+B) Jaune
+C) Bleu
+D) Vert
+Réponse : B - Justification : Le jaune est la couleur universelle pour repérer les canalisations de gaz souterraines.
+Q9. À quelle distance au-dessus de la génératrice supérieure du tube gaz doit être posé le grillage avertisseur ?
+A) Directement collé sur le tube
+B) À 20 cm au-dessus du tube
+C) À 1 mètre
+D) Juste sous le goudron
+Réponse : B - Justification : Cela permet à l'engin de terrassement d'accrocher le grillage jaune avant de percer la conduite.
+Q10. Qu'est-ce qu'un Poste de Détente (PDC) ?
+A) Un lieu de repos pour les agents
+B) Une installation permettant de réduire la pression du gaz d'un réseau amont vers un réseau aval
+C) Une station de compression
+D) Un robinet de barrage
+Réponse : B - Justification : Il réduit par exemple la Haute Pression (70 bar) en Moyenne Pression (4 bar).
+Q11. Quel matériau est le plus utilisé aujourd'hui pour les réseaux de distribution gaz MPB souterrains ?
+A) L'Acier galvanisé
+B) Le Polyéthylène Haute Densité (PEHD)
+C) La Fonte
+D) Le Cuivre
+Réponse : B - Justification : Le PEHD est flexible, résistant à la corrosion et ne nécessite pas de protection cathodique.
+Q12. Comment assemble-t-on principalement les tubes en PEHD ?
+A) Avec de la colle spéciale gaz
+B) Par filetage
+C) Par soudure électrosoudable ou bout-à-bout
+D) Avec du ruban adhésif
+Réponse : C - Justification : L'électrosoudage utilise une résistance intégrée dans le manchon qui fond le PEHD pour une fusion parfaite.
+Q13. Lors d'une soudure électrosoudable PEHD, pourquoi faut-il gratter (écorcer) le tube ?
+A) Pour le rendre rugueux
+B) Pour enlever la couche oxydée superficielle qui empêcherait la fusion moléculaire
+C) Pour enlever la couleur jaune
+D) Pour réduire le diamètre
+Réponse : B - Justification : Sans grattage, la soudure est défectueuse et fuira sous pression.
+Q14. Que fait la vanne de Sécurité (Clapet de Sécurité ou SAV) dans un poste de détente ?
+A) Elle augmente la pression
+B) Elle coupe instantanément l'arrivée du gaz si la pression aval dépasse un seuil critique
+C) Elle ajoute l'odorisant
+D) Elle compte le gaz
+Réponse : B - Justification : Le clapet de sécurité (Slam-shut valve) protège le réseau aval (et les clients) en cas de défaillance du régulateur.
+Q15. À quoi sert la soupape d'échappement (Relief valve) dans un poste de détente ?
+A) À vider le poste
+B) À libérer de petites surpressions temporaires (ex: fermeture brusque des vannes aval) sans déclencher le clapet de sécurité
+C) À faire du bruit
+D) À filtrer le gaz
+Réponse : B - Justification : Elle évite les coupures de gaz intempestives dues à des chocs de pression mineurs.
+Q16. Quelle est la première action à faire face à une fuite de gaz enflammée sur le réseau (Torche) ?
+A) L'éteindre avec de l'eau
+B) L'éteindre avec un extincteur à poudre
+C) Barrer (fermer) la vanne amont pour couper l'alimentation en gaz
+D) Souffler dessus
+Réponse : C - Justification : Si on éteint la flamme sans couper le gaz, le gaz va s'accumuler et créer une explosion massive.
+Q17. Qu'est-ce que l'ATEX ?
+A) Une marque de vannes
+B) La réglementation concernant les ATmosphères EXplosives
+C) Un type de gaz naturel
+D) Un raccord isolant
+Réponse : B - Justification : L'ATEX impose des équipements électriques spéciaux (anti-étincelles) dans les zones à risque gazier.
+Q18. Un outil "Anti-étincelle" utilisé en intervention gaz est généralement fabriqué en :
+A) Acier inoxydable
+B) Alliage Cuivre-Béryllium ou Bronze-Aluminium
+C) Titane pur
+D) Fonte
+Réponse : B - Justification : Ces alliages ne produisent pas d'étincelles lors d'un choc, évitant l'inflammation du gaz.
+Q19. Que mesure un Explosimètre ?
+A) La pression du gaz
+B) Le pourcentage de la Limite Inférieure d'Explosivité (% LIE) d'un gaz combustible dans l'air
+C) Le taux de CO2
+D) Le débit de fuite
+Réponse : B - Justification : Si l'explosimètre affiche 100% LIE, l'atmosphère est explosive (5% de méthane dans l'air).
+Q20. Pourquoi installe-t-on un Raccord Isolant (Joint Isolant) sur une conduite en acier ?
+A) Pour empêcher le gaz de fuir
+B) Pour isoler électriquement la tuyauterie souterraine de l'installation aérienne, afin de maintenir la Protection Cathodique
+C) Pour filtrer la poussière
+D) Pour réduire la pression
+Réponse : B - Justification : Il empêche les courants de protection cathodique de s'échapper vers d'autres structures métalliques.
+Q21. Quel est le but de la Protection Cathodique sur un réseau Gaz en acier ?
+A) Réchauffer le gaz
+B) Empêcher la corrosion électrochimique du tube en acier enterré en lui imposant un potentiel négatif (cathode)
+C) Éviter la foudre
+D) Détecter les fuites
+Réponse : B - Justification : Par courant imposé ou anodes sacrificielles, l'acier est protégé de l'oxydation.
+Q22. Avant la mise en gaz d'un réseau neuf, on effectue un essai de résistance mécanique. Avec quoi ?
+A) Du gaz naturel
+B) De l'air comprimé ou de l'azote sec
+C) De l'eau
+D) De l'oxygène
+Réponse : B - Justification : L'essai hydraulique est rare en distribution. L'air/azote est sûr et sec. Jamais de gaz naturel pour l'essai de résistance.
+Q23. Pendant une "Purge" d'un réseau avant mise en gaz, quel est l'objectif ?
+A) Nettoyer le tube à l'eau
+B) Chasser tout l'air contenu dans la conduite en injectant le gaz naturel, jusqu'à avoir 100% de gaz (éliminant le risque de mélange explosif)
+C) Mettre le tuyau sous vide
+D) Ajouter du THT
+Réponse : B - Justification : Le passage air->gaz est critique. On brûle souvent le gaz purgé ou on utilise l'explosimètre pour vérifier.
+Q24. La pression de distribution domestique est garantie par :
+A) Le compresseur
+B) Le détendeur-régulateur placé dans le coffret client
+C) Le compteur
+D) La vanne d'arrêt
+Réponse : B - Justification : Il abaisse la pression du réseau (ex: 4 bar) à la pression d'utilisation des appareils (21 mbar).
+Q25. Quel est le rôle d'un filtre dans un poste de détente Gaz ?
+A) Changer la couleur du gaz
+B) Retenir les poussières, oxydes et impuretés qui pourraient endommager les sièges des régulateurs et compteurs
+C) Liquéfier le gaz
+D) Augmenter la pression
+Réponse : B - Justification : La pureté du gaz est vitale pour la mécanique de précision des détendeurs.
+Q26. Un client signale une "odeur de gaz". Quelle est la première consigne de sécurité au téléphone ?
+A) Allumer la lumière pour chercher la fuite
+B) Ne produire aucune étincelle (ne toucher à aucun interrupteur, téléphone ou sonnette), ouvrir les fenêtres, fermer l'arrivée de gaz et évacuer.
+C) Appeler avec le téléphone fixe de la maison
+D) Craquer une allumette près du compteur
+Réponse : B - Justification : Le moindre arc électrique d'un interrupteur peut déclencher l'explosion de la pièce saturée en gaz.
+Q27. En cas de présence de Monoxyde de Carbone (CO), d'où provient-il ?
+A) D'une fuite du réseau Sonelgaz
+B) D'une combustion incomplète du gaz naturel due à un manque de ventilation (manque d'oxygène) ou un conduit de cheminée bouché chez le client
+C) De l'odorisant THT
+D) Des conduites en PEHD
+Réponse : B - Justification : Le CO est inodore, incolore et mortel. Le gaz naturel lui-même n'est pas toxique, mais asphyxiant s'il déplace l'air.
+Q28. Sur un réseau acier, la "Mise à l'air libre" (Évent) des organes de sécurité du poste de détente doit obligatoirement :
+A) Rester à l'intérieur du poste
+B) Déboucher à l'extérieur, en hauteur, loin de toute source d'ignition
+C) Être bouchée
+D) Être raccordée à l'égout
+Réponse : B - Justification : Si une soupape crache du gaz, il doit être dissipé rapidement dans l'atmosphère.
+Q29. Quel est le principe de fonctionnement d'un détecteur de fuite de gaz portable (Catharomètre) ?
+A) Il écoute le bruit de la fuite
+B) L'oxydation catalytique du gaz sur un filament chauffé modifie la résistance électrique du pont de Wheatstone, proportionnellement à la concentration
+C) Il sent l'odeur du THT
+D) Il mesure la chute de pression
+Réponse : B - Justification : Le filament de platine brûle le gaz, s'échauffe et déséquilibre le circuit électrique de mesure.
+Q30. Dans la pose d'un réseau gaz sous chaussée, la profondeur minimale d'enfouissement est généralement de :
+A) 10 cm
+B) 30 cm
+C) 80 cm à 1 mètre (selon les charges roulantes)
+D) 3 mètres
+Réponse : C - Justification : Cette profondeur protège la conduite des vibrations, du gel et des petits travaux de surface.
+Q31. Lors de l'intervention de soudure (Bout-à-bout) PEHD, la température du miroir chauffant est d'environ :
+A) 100°C
+B) 210°C - 230°C
+C) 500°C
+D) 800°C
+Réponse : B - Justification : C'est la température de fusion optimale du polyéthylène sans le dégrader (brûler).
+Q32. Pourquoi doit-on purger l'eau des siphons sur les vieux réseaux gaz ?
+A) Pour boire
+B) L'eau condensée s'accumule dans les points bas et peut bloquer complètement le passage du gaz (bouchon d'eau)
+C) Pour refroidir le sol
+D) Pour nettoyer les conduites
+Réponse : B - Justification : Moins fréquent avec le gaz sec moderne, mais vital sur les anciens réseaux.
+Q33. Qu'est-ce que l'opération "d'écrasement" (Squeeze-off) sur un tube PEHD ?
+A) Détruire le tube après usage
+B) Aplatir temporairement le tuyau en plastique avec un outil mécanique spécifique pour couper le flux de gaz pendant une réparation, sans utiliser de vanne
+C) Mesurer son épaisseur
+D) Un défaut de fabrication
+Réponse : B - Justification : Très utile en PEHD, mais nécessite de respecter des butées pour ne pas fissurer la matière.
+Q34. Quel type de compteur est principalement utilisé pour les abonnés domestiques ?
+A) Compteur à turbine
+B) Compteur à soufflets (Diaphragme)
+C) Compteur à ultrasons
+D) Compteur à orifice
+Réponse : B - Justification : Le compteur à parois déformables est très précis pour les faibles débits domestiques.
+Q35. Dans un poste de comptage industriel, pourquoi installe-t-on un "Correcteur de Volume" (PTZ) ?
+A) Pour réduire la facture
+B) Le gaz est compressible. Le correcteur ramène le volume mesuré sous pression et température réelles à un volume "Normal" (0°C, 1 atm) pour une facturation équitable
+C) Pour augmenter la pression
+D) Pour filtrer le gaz
+Réponse : B - Justification : La quantité d'énergie contenue dans 1 m3 à 4 bar est bien plus grande que dans 1 m3 à 20 mbar.
+Q36. Le piquage en charge (Tapping / Prise en charge) sur une conduite Gaz Acier sous pression nécessite :
+A) De couper le gaz dans toute la ville
+B) L'utilisation d'une machine à percer étanche (Drilling machine) à travers une vanne soudée, évitant ainsi toute coupure d'alimentation des clients
+C) De congeler le tuyau
+D) De percer avec une simple chignole
+Réponse : B - Justification : Permet de raccorder un nouveau client sans perturber le réseau existant.
+Q37. Quelle est l'utilité du "Bypass" dans un Poste de Détente ?
+A) Décorer le poste
+B) Permettre l'alimentation continue en gaz des abonnés lors des opérations de maintenance ou de panne de la ligne de détente principale
+C) Mélanger l'eau et le gaz
+D) Vider le poste
+Réponse : B - Justification : La ligne de secours (Bypass) est manuelle ou automatique selon les postes.
+Q38. Sur une canalisation gaz en acier, l'enrobage (revêtement externe en bitume ou polyéthylène tri-couche) a pour but de :
+A) Faciliter le glissement dans le sol
+B) Fournir l'isolation électrique primaire entre l'acier et la terre, condition sine qua non au fonctionnement de la protection cathodique
+C) Réduire la pression
+D) Garder le gaz au chaud
+Réponse : B - Justification : Sans enrobage, la protection cathodique consommerait trop de courant pour protéger la ligne.
+Q39. La norme exige un espacement minimal entre une canalisation Gaz et un câble électrique souterrain. Généralement :
+A) 2 cm
+B) Aucun espacement
+C) 20 cm en croisement
+D) 2 mètres
+Réponse : C - Justification : Prévient les arcs électriques vers la conduite gaz en cas de défaut du câble électrique.
+Q40. En protection cathodique, le potentiel de protection standard mesuré par rapport à une électrode Cu/CuSO4 doit être au moins de :
+A) + 1 Volt
+B) - 0.85 Volt (-850 mV)
+C) 0 Volt
+D) 220 Volts
+Réponse : B - Justification : C'est le critère d'immunité thermodynamique de l'acier contre la corrosion dans le sol.
+Q41. Lors d'une intervention d'urgence pour forte odeur de gaz en immeuble, vous repérez la fuite. Que faites-vous en premier ?
+A) Vous colmatez la fuite avec votre doigt
+B) Vous ouvrez l'armoire électrique pour couper le courant
+C) Vous ventilez massivement les lieux, coupez l'organe de coupure générale (vanne de pied) et interdisez tout point chaud ou manœuvre électrique
+D) Vous allumez une torche
+Réponse : C - Justification : Isoler l'énergie (Gaz) et dissiper la concentration sans créer la moindre étincelle.
+Q42. Que signifie l'habilitation gaz "Z" ?
+A) Zéro risque
+B) Intervenant réalisant des opérations spécifiques nécessitant une grande qualification (Soudeur acier, Soudeur PE, etc.)
+C) Zone rurale
+D) Agent de bureau
+Réponse : B - Justification : Les habilitations spécifiques (Soudure, intervention sous pression) valident le geste technique critique.
+Q43. Pourquoi est-il interdit d'utiliser une flamme nue (briquet) pour rechercher une fuite de gaz ?
+A) C'est difficile à voir
+B) Le risque d'explosion ou de brûlure grave est absolu
+C) Le gaz naturel éteint la flamme
+D) C'est trop cher
+Réponse : B - Justification : On utilise TOUJOURS un produit moussant (mille-bulles) ou un détecteur électronique.
+Q44. Le gaz naturel est-il toxique s'il est inhalé en petite quantité ?
+A) Oui, il détruit les poumons instantanément
+B) Non, il n'est pas toxique, mais il est asphyxiant s'il remplace totalement l'oxygène dans une pièce fermée
+C) Oui, il provoque le choléra
+D) Non, il guérit l'asthme
+Réponse : B - Justification : Le danger direct du méthane est l'explosion, pas l'intoxication chimique (contrairement au Monoxyde de Carbone).
+Q45. Un "Défaut d'Isolement" sur un joint isolant d'une conduite acier se diagnostique par :
+A) Une fuite de gaz visible
+B) Une chute importante du potentiel de la protection cathodique (le courant s'échappe vers la structure en défaut)
+C) Une odeur de brûlé
+D) Le refroidissement du tuyau
+Réponse : B - Justification : Si le joint est court-circuité, l'acier de la canalisation est relié à la terre globale du poste, annulant la protection.
+Q46. Lors d'une réparation sur conduite PEHD par électrosoudage, l'agent oublie de maintenir les pièces immobiles pendant le temps de refroidissement (Cooling time). Risque ?
+A) Aucun risque
+B) Rupture microscopique de la zone de fusion, entraînant une fuite certaine lors de la remise sous pression
+C) Le PEHD change de couleur
+D) L'automate de soudage explose
+Réponse : B - Justification : Le refroidissement naturel et sans contrainte mécanique garantit la cristallisation solide du PEHD.
+Q47. Pour la consignation gaz d'un tronçon (LOTO), quelle est la procédure sûre ?
+A) Fermer une vanne et commencer à scier
+B) Fermer, condamner (cadenas), purger la pression, vérifier l'absence de gaz (explosimètre)
+C) Demander à un collègue de tenir le tuyau
+D) Augmenter la pression
+Réponse : B - Justification : Sécuriser la zone de travail exige la certitude de la pression nulle et de l'absence d'atmosphère explosive.
+Q48. Un compresseur de gaz dans une station est utilisé pour :
+A) Réduire la pression pour la distribution
+B) Augmenter la pression du gaz pour compenser les pertes de charge sur les longues distances de transport
+C) Transformer le gaz en liquide
+D) Ajouter de l'eau
+Réponse : B - Justification : La compression redonne de l'énergie au gaz pour son déplacement sur le réseau de Transport.
+Q49. Qu'est ce que le phénomène d'hydrate dans les conduites gaz à haute pression ?
+A) La formation de glace solide (eau + méthane) qui peut bloquer complètement les vannes et détendeurs lors de fortes détentes
+B) L'évaporation de l'acier
+C) Une réaction nucléaire
+D) La création de pétrole
+Réponse : A - Justification : C'est pourquoi on réchauffe parfois le gaz avant la détente (avec des échangeurs) pour éviter la formation de bouchons de glace.
+Q50. L'organe de Coupure de Réseau (Vanne de sectionnement) permet :
+A) De décorer la rue
+B) D'isoler un secteur de la ville en cas d'accident sans pénaliser le reste des abonnés
+C) D'augmenter le débit
+D) De mélanger les gaz
+Réponse : B - Justification : Sectoriser le réseau est la base de la maintenance et de la sécurité publique (Limiter l'impact d'un incident).
+Q51. Quelle est la vitesse de l'air de ventilation requise dans un local gaz fermé (ex: poste de détente maçonné) ?
+A) Aucune ventilation n'est nécessaire
+B) Il doit y avoir une ventilation naturelle haute et basse pour évacuer immédiatement toute fuite éventuelle (le gaz monte)
+C) Une climatisation à 18°C
+D) Un ventilateur à eau
+Réponse : B - Justification : Le méthane est plus léger que l'air, une grille haute est indispensable pour dissiper les concentrations sous plafond.
+Q52. Pourquoi équipe-t-on les détendeurs domestiques d'un "réarmement manuel" ?
+A) Pour obliger le client à appeler Sonelgaz
+B) Si le gaz coupe (ex: chute de réseau), l'appareil se ferme et ne se rouvre pas seul au retour du gaz, évitant d'envoyer du gaz dans une cuisinière restée ouverte
+C) Pour faire du sport
+D) Pour compter le nombre de coupures
+Réponse : B - Justification : C'est une sécurité fondamentale contre les accumulations de gaz post-coupure.
+Q53. Dans le cadre de l'odorisation du gaz, quel équipement vérifie la concentration en THT sur le réseau ?
+A) Un thermomètre
+B) Un chromatographe ou micro-odorimètre
+C) Un voltmètre
+D) Un luxmètre
+Réponse : B - Justification : L'appareil analyse chimiquement l'air prélevé pour certifier que le seuil réglementaire de Mercaptan est respecté.
+Q54. L'inspection pédestre systématique du réseau gaz urbain (Recherche Systématique de Fuite - RSF) se fait avec :
+A) Un chien renifleur
+B) Un appareil de détection ultra-sensible (ppm) à prélèvement d'air continu au ras du sol ou des bouches d'égout
+C) Un drône
+D) Une torche
+Réponse : B - Justification : Cela permet de repérer des micro-fuites souterraines bien avant qu'elles ne deviennent dangereuses.
+Q55. Un tuyau de cuivre d'installation intérieure Gaz doit être assemblé par :
+A) Soudure à l'étain tendre (plombier)
+B) Brasage fort (cuivre-phosphore ou argent) avec température de fusion > 450°C
+C) Avec du silicone
+D) Avec de la colle PVC
+Réponse : B - Justification : La réglementation exige le brasage fort car il résiste mieux à la chaleur en cas d'incendie, évitant l'alimentation du feu par la fuite de gaz.
+Q56. Que signifie le "PCS" du gaz naturel facturé au client ?
+A) Pression Constante Système
+B) Pouvoir Calorifique Supérieur (Quantité d'énergie dégagée par la combustion complète d'un m3 de gaz, incluant la chaleur de condensation de l'eau)
+C) Point de Compression Standard
+D) Poste de Contrôle Sécurisé
+Réponse : B - Justification : On facture le client sur l'énergie (kWh) qu'il consomme, pas seulement sur le volume, d'où l'application d'un coefficient (PCS).
+Q57. Le "Gaz de Pétrole Liquéfié" (GPL - Butane/Propane) se différencie du Gaz Naturel (Méthane) par :
+A) Il est bleu
+B) Il est plus lourd que l'air et s'accumule dans les caves et points bas
+C) Il n'est pas inflammable
+D) Il est transporté à 1000 bars
+Réponse : B - Justification : Très important pour les interventions d'urgence. Le gaz naturel (Méthane) monte au plafond, le GPL rampe au sol.
+Q58. Qu'est-ce qu'une "Mise hors gaz" d'un réseau acier ?
+A) Fermer le robinet du client
+B) Balayer le gaz présent dans la conduite en injectant un gaz inerte (Azote) pour éliminer tout risque d'explosion avant de découper le tube au chalumeau
+C) Nettoyer avec de l'oxygène
+D) Laisser ouvert à l'air pendant 10 minutes
+Réponse : B - Justification : L'oxygène ne doit jamais se mélanger au gaz pendant un travail à chaud (soudure).
+Q59. Dans un poste de détente, on trouve souvent deux détendeurs en série : le détendeur "Moniteur" (Monitor) et le détendeur "Actif" (Active). Pourquoi ?
+A) Pour doubler la pression
+B) Redondance de sécurité. Le moniteur est réglé un peu plus haut. Si l'actif casse et reste grand ouvert, le moniteur prend le relais et maintient la pression sans couper le client.
+C) Pour mélanger le gaz
+D) L'un est pour l'été, l'autre l'hiver
+Réponse : B - Justification : Assure la continuité de service pour les gros industriels tout en garantissant la sécurité en cas de panne matérielle.
+Q60. Un manomètre "Tube en U" à colonne d'eau est utilisé pour :
+A) Mesurer la pression de 70 bar
+B) Mesurer des très faibles pressions (ex: 21 mbar) ou vérifier l'étanchéité d'une installation intérieure domestique
+C) Peser le gaz
+D) Ajouter de l'eau au gaz
+Réponse : B - Justification : Extrêmement précis pour les micro-fuites à basse pression, car 10 mbar = 100 mm de colonne d'eau.
+Q61. L'essai d'étanchéité d'un branchement PEHD neuf avant remblai se fait à une pression de :
+A) 1 bar
+B) Généralement 6 bar pendant un temps donné (ex: 2h) sans baisse de pression (corrigée des variations de température)
+C) 100 bar
+D) Avec le gaz du réseau directement
+Réponse : B - Justification : On teste toujours à une pression supérieure à la pression de service pour garantir les soudures.
+Q62. Qu'est-ce qu'une vanne "Slam Shut" sur un régulateur gaz ?
+A) C'est un clapet de sécurité à fermeture rapide qui coupe le flux si la pression aval dépasse un seuil de sécurité, protégeant le réseau aval de l'éclatement.
+B) Une vanne pour ralentir le gaz
+C) Une vanne d'ajout d'odeur
+D) C'est le compteur
+Réponse : A - Justification : C'est la dernière ligne de défense mécanique contre une surpression fatale.
+Q63. Sur une chaudière à gaz, à quoi sert le thermocouple (sécurité flamme) ?
+A) Chauffer l'eau plus vite
+B) Si la flamme s'éteint (vent, coupure), le thermocouple refroidit, ne génère plus de courant, et l'électrovanne coupe l'arrivée de gaz pour éviter une explosion
+C) Mesurer le gaz
+D) Nettoyer le brûleur
+Réponse : B - Justification : C'est la sécurité passive indispensable de tout appareil au gaz.
+Q64. Dans le réseau de transport, qu'est-ce qu'un poste de sectionnement (Line Valve Station) ?
+A) Une station essence
+B) Une installation comprenant de grosses vannes motorisées permettant d'isoler des tronçons de pipeline (ex: tous les 20 km) en cas de rupture de la conduite
+C) Un poste de détente BP
+D) Une station de méthanisation
+Réponse : B - Justification : Les vannes de sectionnement sont fermées automatiquement en cas de détection de forte chute de pression (Line Break).
+Q65. La tuyauterie de gaz naturel dans l'industrie est standardisée mondialement avec la couleur :
+A) Bleue
+B) Jaune ou Ocre
+C) Rouge
+D) Verte
+Réponse : B - Justification : Le jaune est la norme (Norme AFNOR / ISO) pour l'identification visuelle immédiate des fluides inflammables.
+Q66. Pourquoi le gaz naturel produit-il de la condensation (givre) à l'extérieur des conduites lors de fortes chutes de pression (Postes de Détente) ?
+A) Car le gaz fuit
+B) Phénomène de Joule-Thomson : l'expansion soudaine du gaz entraîne une chute de sa température (environ 0.5°C par bar de chute), congelant l'humidité de l'air ambiant
+C) L'acier devient de la glace
+D) Le gaz est réfrigéré en usine
+Réponse : B - Justification : D'où la nécessité de réchauffeurs sur les postes de détente très haute pression.
+Q67. Quelle est la particularité de l'Habilitation électrique des agents travaillant sur des postes Gaz (ex: techniciens protection cathodique) ?
+A) Ils n'en ont pas besoin
+B) Ils doivent être habilités ATEX en plus de l'habilitation électrique classique, pour comprendre les risques des étincelles électriques en zone explosible
+C) Ils sont habilités au nucléaire
+D) Ils utilisent du 10 000 Volts
+Réponse : B - Justification : L'électricité est la première source d'ignition en environnement gazier.
+Q68. Qu'est ce qu'un "Pigtail" (Queue de cochon) en robinetterie gaz ?
+A) La queue d'un animal
+B) Une lyre de raccordement flexible (souvent en cuivre en spirale) utilisée pour raccorder des bouteilles de gaz haute pression à un détendeur
+C) Un type de fuite
+D) Un outil de soudure
+Réponse : B - Justification : La forme en spirale absorbe les chocs et les dilatations mécaniques.
+Q69. Lors du contrôle des soudures acier d'une conduite de transport gaz, la méthode CND (Contrôle Non Destructif) la plus courante est :
+A) Frapper avec un marteau
+B) La radiographie (Rayons X ou Gamma) ou les Ultrasons pour vérifier à l'intérieur du cordon de soudure s'il n'y a pas de fissures, inclusions ou manques de pénétration
+C) Le test de l'éponge
+D) La peinture
+Réponse : B - Justification : Garantit l'intégrité à 100% de l'assemblage sous haute pression.
+Q70. Un joint de bride "Klingerit" sur un réseau gaz sert à :
+A) Ralentir le gaz
+B) Assurer l'étanchéité absolue entre deux brides boulonnées
+C) Créer une étincelle
+D) Ajouter de l'odorisant
+Réponse : B - Justification : Ces joints sans amiante sont conçus pour résister à la pression et aux fluides gaz.
+Q71. En intervention sur un coffret de détente domestique, on découvre que l'évent du détendeur fuit en permanence. Que cela signifie-t-il ?
+A) Le détendeur fonctionne parfaitement
+B) La membrane interne du détendeur est percée. Le gaz s'échappe par la chambre de régulation (l'évent) et le détendeur doit être remplacé immédiatement
+C) C'est normal quand il fait chaud
+D) Il faut boucher l'évent avec du mastic
+Réponse : B - Justification : L'évent permet au détendeur de "respirer". Si du gaz y sort, la membrane est rompue.
+Q72. Quelle précaution prendre lors du stockage des tubes PEHD sur un parc ?
+A) Les laisser en plein soleil pendant 5 ans
+B) Les protéger des rayons UV prolongés (soleil) qui dégradent les chaînes polymères, et fermer les extrémités (bouchons) pour éviter les saletés et l'eau
+C) Les remplir d'eau
+D) Les peindre en noir
+Réponse : B - Justification : Le PEHD perd ses propriétés mécaniques sous exposition UV intense et non protégée.
+Q73. À quoi correspond l'Unité "SDR" (Standard Dimension Ratio) pour un tube PEHD ?
+A) Son diamètre
+B) Le rapport entre le diamètre extérieur du tube et son épaisseur de paroi. Un SDR 11 est plus épais et résiste à plus de pression qu'un SDR 17.
+C) Sa couleur
+D) Son poids en kilogrammes
+Réponse : B - Justification : Indice fondamental pour le choix de la pression de service du tube plastique.
+Q74. Un "Abonné Interruptible" sur le réseau gaz industriel est :
+A) Un client qui ne paye pas
+B) Un client industriel bénéficiant d'un tarif avantageux mais qui accepte que Sonelgaz lui coupe l'alimentation en gaz lors des pointes extrêmes de froid pour prioriser les clients domestiques
+C) Un client qui coupe son gaz le dimanche
+D) Une centrale nucléaire
+Réponse : B - Justification : C'est le principe d'effacement pour sécuriser l'approvisionnement national en hiver.
+Q75. Quel gaz est souvent utilisé comme "Gaz traceur" pour rechercher les micro-fuites sur les conduites enterrées non odorisées ?
+A) L'Hydrogène ou l'Hélium
+B) Le Carbone
+C) L'Oxygène
+D) Le Plomb
+Réponse : A - Justification : Le mélange (Azote+Hydrogène) s'échappe rapidement par la moindre porosité et est détecté en surface par des "renifleurs" très sensibles.
+Q76. Un plan "As-Built" (Tel que construit / Recollement) d'un réseau gaz est :
+A) Un brouillon
+B) Le plan définitif géoréférencé avec précision (coordonnées GPS), intégrant toutes les modifications faites lors des travaux, utilisé pour le repérage futur (SIG)
+C) Un plan d'évacuation
+D) Une facture
+Réponse : B - Justification : Vital pour ne pas percer la conduite lors de travaux futurs (sécurité des tiers).
+Q77. En régulation gaz, un "Pilote" associé à un régulateur de forte capacité permet de :
+A) Conduire le camion de maintenance
+B) Agir comme un petit régulateur ultra-précis qui fournit la pression de consigne pour commander le clapet du régulateur principal
+C) Chauffer le gaz
+D) Allumer la lumière
+Réponse : B - Justification : La technologie "pilotée" offre une bien meilleure précision pour les gros débits et pressions.
+Q78. Le "Venturi" d'un compteur à orifice est basé sur le principe physique :
+A) De la gravité
+B) De la dépression (Chute de pression) créée par l'accélération du fluide au passage d'un rétrécissement, permettant de calculer le débit (Loi de Bernoulli)
+C) De la température
+D) De l'électromagnétisme
+Réponse : B - Justification : C'est le principe de la mesure de débit par organe déprimogène pour le grand transport industriel.
+Q79. L'injection de Méthanol dans un ancien pipeline sert à :
+A) Donner une odeur
+B) Se mélanger avec l'eau et abaisser le point de congélation pour détruire ou prévenir la formation de bouchons d'hydrates (glace)
+C) Nettoyer la rouille
+D) Augmenter la pression
+Réponse : B - Justification : Solution chimique d'urgence courante lors des grands froids sur les lignes de transport de gaz non parfaitement sec.
+Q80. Quel est l'équipement de protection individuelle (EPI) critique spécifique aux interventions sur tuyauterie gaz en charge ?
+A) Des gants de boxe
+B) Des vêtements ignifugés (Coton traité ou Nomex) qui ne fondent pas et ne s'enflamment pas en cas de flash (feu flash)
+C) Un maillot de bain
+D) Des lunettes de soleil
+Réponse : B - Justification : Les vêtements synthétiques fondent sur la peau en cas d'arc ou de flash feu, l'EPI ignifugé est vital.
+Q81. Le "Pigging" (Racleur) sur un grand pipeline gazier sert à :
+A) Trouver du pétrole
+B) Insérer un piston (Pig) dans le tube, poussé par la pression du gaz, pour nettoyer les liquides/débris ou inspecter l'intérieur du tube avec des capteurs (Intelligent Pig)
+C) Bloquer le gaz
+D) Faire du bruit
+Réponse : B - Justification : Outil indispensable de maintenance pour garder les conduites de transport propres et prévenir la corrosion interne.
+Q82. La "Loi de Boyle-Mariotte" (P.V = Constante à T constante) implique que pour le gaz stocké :
+A) Si on diminue le volume (compression), la pression diminue
+B) Si on comprime le gaz (diminution du volume), la pression augmente proportionnellement
+C) Le gaz change de couleur
+D) Le gaz devient lourd
+Réponse : B - Justification : Base de la physique des gaz compressibles.
+Q83. Un "Chapeau de Vent" (Cowl) sur un évent d'évacuation de gaz sert à :
+A) Rendre l'évent beau
+B) Empêcher l'eau de pluie et les oiseaux d'entrer dans le tuyau, tout en dirigeant le gaz purgé vers le haut pour une dispersion rapide
+C) Bloquer le gaz
+D) Filtrer le CO2
+Réponse : B - Justification : Évite le blocage de la soupape par un nid d'oiseau.
+Q84. Le test de conformité d'une soudure bout-à-bout PEHD comprend l'inspection du "Bourrelet". Que cherche-t-on ?
+A) Une peinture jaune
+B) Un bourrelet régulier, double, uniforme tout autour de la circonférence, signe d'une pression et température de soudage parfaites
+C) L'absence totale de bourrelet
+D) Un bourrelet très fin d'un côté et épais de l'autre
+Réponse : B - Justification : L'inspection visuelle du bourrelet est le critère CND premier de la soudure PEHD.
+Q85. Qu'est-ce qu'une "Zone 1" dans la classification ATEX ?
+A) Le parking du poste
+B) Un emplacement où une atmosphère explosive gazeuse est susceptible de se présenter occasionnellement en fonctionnement normal
+C) L'intérieur permanent de la cuve de gaz
+D) Un bureau
+Réponse : B - Justification : Zone 0 (Permanent), Zone 1 (Occasionnel), Zone 2 (Rare ou accidentel).
+Q86. Si du GNL (Gaz Naturel Liquéfié) se répand sur le sol, que fait-il ?
+A) Il brûle le sol
+B) Il bout intensément (-162°C) en absorbant la chaleur, créant un énorme nuage de vapeur blanche (froid condensant l'eau de l'air) lourd puis qui s'élève en se réchauffant
+C) Il reste liquide pendant des jours
+D) Il se transforme en glace
+Réponse : B - Justification : Le GNL est stocké à très basse température, son déversement crée un brouillard givrant massif.
+Q87. Un manomètre "Bourdon" fonctionne par :
+A) Électronique avancée
+B) La déformation (déroulement) d'un tube cintré sous l'action de la pression du gaz interne, entraînant l'aiguille du cadran
+C) Magnétisme
+D) Lecture optique
+Réponse : B - Justification : Technologie purement mécanique extrêmement robuste.
+Q88. Un "Régulateur de Pression Axial" (Flux axial) se distingue par :
+A) Son poids léger
+B) Un cheminement du gaz en ligne droite à travers une chemise en caoutchouc dilatable, offrant une énorme capacité de débit et un fonctionnement très silencieux
+C) Sa couleur rouge
+D) Sa faible résistance au feu
+Réponse : B - Justification : Les vannes type "Axial" ou "Gorter" sont la norme pour les énormes débits (Transport).
+Q89. La formation de "Poussière noire" (Pyrophorique) dans les conduites gaz est dangereuse car :
+A) Elle obstrue la vue
+B) C'est du sulfure de fer généré par l'H2S. À l'ouverture d'un tube (contact avec l'oxygène de l'air), cette poussière s'enflamme spontanément, causant des brûlures et incendies
+C) Elle fait fondre le PEHD
+D) Elle coupe le signal radio
+Réponse : B - Justification : Le risque Pyrophorique impose d'arroser l'intérieur du tube d'eau lors de la coupe.
+Q90. Dans un poste de livraison gaz industriel, l'organe "Clapet anti-retour" sert à :
+A) Payer la facture
+B) Empêcher le gaz du client industriel (ou de ses compresseurs) de refluer vers le réseau du distributeur en cas de chute de pression amont
+C) Réchauffer le gaz
+D) Changer la direction
+Réponse : B - Justification : Protège le réseau public contre la pollution ou la mise en surpression par une installation privée défectueuse.
+Q91. Un "Défaut d'Odorisation" implique :
+A) Que le gaz a trop bonne odeur
+B) Que le niveau de THT injecté est trop bas, empêchant un nez humain de détecter une fuite, constituant une urgence d'exploitation absolue
+C) Que la machine consomme trop d'électricité
+D) Que la facture est erronée
+Réponse : B - Justification : La loi impose de pouvoir sentir le gaz à 20% de sa limite explosive. L'absence de THT tue.
+Q92. Le "Coup de bélier" (Water Hammer) sur un réseau gaz liquide ou fluide lourd :
+A) N'existe pas
+B) Est une puissante onde de choc de surpression créée par la fermeture trop rapide d'une vanne, pouvant éclater les joints et tuyaux
+C) Fait fuir le THT
+D) Est produit par un outil
+Réponse : B - Justification : Les grandes vannes (motorisées) doivent être fermées lentement (progressivité) pour éviter l'onde de choc.
+Q93. L'expression "Pouvoir de Coupure" (PdC) pour un agent gaz :
+A) Est liée à l'électricité
+B) En gaz, on parle de capacité d'interruption : s'assurer qu'une vanne peut fermer mécaniquement contre la différence de pression maximale du réseau (Delta P) sans se bloquer
+C) Est le diamètre du tube
+D) Le temps de fermeture
+Réponse : B - Justification : Une vanne papillon géante soumise à 70 bar de delta P requiert un moteur (actionneur) d'une puissance colossale pour pivoter.
+Q94. Le "Gaz de Schiste" (Shale gas) est chimiquement :
+A) Totalement différent du gaz conventionnel
+B) Chimiquement identique au gaz naturel conventionnel (Méthane majoritaire), mais extrait de roches mères très peu perméables via fracturation hydraulique
+C) Du butane toxique
+D) Du charbon
+Réponse : B - Justification : Le réseau ne fait aucune différence, le gaz est le même (CH4).
+Q95. Le PE100 comparé au PE80 (Polyéthylène) offre :
+A) Une couleur différente (noir vs jaune)
+B) Une meilleure résistance mécanique, permettant d'utiliser des pressions de service plus élevées pour une même épaisseur de tube (ou des tubes plus fins pour la même pression)
+C) Une soudure impossible
+D) Un poids plus élevé
+Réponse : B - Justification : C'est la génération supérieure de résine plastique.
+Q96. L'opération de "Tirage au vide" avant la mise en gaz d'un grand réseau neuf sert à :
+A) Remplir de gaz plus vite
+B) Évacuer toute l'humidité résiduelle de l'épreuve hydraulique et assécher parfaitement la conduite
+C) Aspirer la terre
+D) Diminuer le diamètre
+Réponse : B - Justification : Le vide fait bouillir l'eau résiduelle à basse température, asséchant totalement l'acier.
+Q97. Une "Anode Galvanique" en Magnésium couplée à un tube en acier dans le sol :
+A) Produit de la lumière
+B) A un potentiel électrochimique plus négatif que l'acier. Elle va se corroder et se détruire (sacrifier) en cédant ses électrons pour protéger la conduite en acier
+C) Fait fondre l'acier
+D) Mesure la pression
+Réponse : B - Justification : C'est le principe de la protection cathodique par anode sacrificielle (sans source de courant électrique externe).
+Q98. Les "Postes de Soutirage" (City Gate Stations) sont la frontière entre :
+A) La mer et la terre
+B) Le réseau de Transport national Haute Pression et le réseau de Distribution urbain (Moyenne Pression)
+C) La maison et le compteur
+D) Le compresseur et le puits
+Réponse : B - Justification : C'est l'interface GRT (Transport) / GRD (Distribution), incluant filtration, comptage massif, réchauffage, détente et odorisation.
+Q99. Pour arrêter un incendie sur une armoire de régulation gaz, le premier réflexe de sécurité du technicien Gazier est :
+A) Pulvériser de l'eau sur les conduites HT
+B) Couper immédiatement la "Vanne de Pied" ou vanne barrage amont du poste pour supprimer le combustible
+C) Prendre une photo
+D) Ouvrir les portes de l'armoire
+Réponse : B - Justification : Le gaz enflammé s'éteint tout seul si la source est isolée.
+Q100. En fin de Commissioning, le document "PV de Mise en Gaz" (Procès-Verbal) atteste légalement :
+A) Que le chantier est peint
+B) Que tous les essais de résistance, d'étanchéité, de purge (absence d'air/ATEX) ont été réalisés avec succès, et que l'infrastructure est transférée à l'exploitant de manière sécurisée
+C) Le prix du gaz
+D) L'arrivée des factures
+Réponse : B - Justification : Document contractuel et légal transférant la responsabilité du constructeur vers l'exploitant gazier.
+`;
 
-        function saveToLocalStorage() { localStorage.setItem('sonelgaz_results', JSON.stringify(window.allCandidatesResults)); }
-        
-        function shuffleArray(array) {
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex !== 0) {
-                randomIndex = Math.floor(Math.random() * currentIndex); currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        // ==========================================
+        // MODULE 1: HABILITATION QCM
+        // ==========================================
+        const QuizModule = () => {
+            const parseQCM = useMemo(() => {
+                const qList = [];
+                const blocks = rawGasQCMData.split(/(?=Q\d+\.)/g);
+                blocks.forEach(b => {
+                    b = b.trim();
+                    if (!b.startsWith('Q')) return;
+                    const qMatch = b.match(/^Q(\d+)\.\s*(.*?)(?=A\))/s);
+                    if (!qMatch) return;
+                    
+                    const id = parseInt(qMatch[1]);
+                    const qText = qMatch[2].trim();
+                    const options = [];
+                    const letters = ['A', 'B', 'C', 'D'];
+                    for (let i=0; i<letters.length; i++) {
+                        let nL = letters[i+1];
+                        let rStr = nL ? `${letters[i]}\\)\\s*(.*?)(?=${nL}\\)|Réponse\\s*:)` : `${letters[i]}\\)\\s*(.*?)(?=Réponse\\s*:)`;
+                        const oMatch = b.match(new RegExp(rStr, 's'));
+                        if (oMatch) options.push({ id: letters[i], text: oMatch[1].trim() });
+                    }
+                    const rMatch = b.match(/Réponse\s*:\s*([A-D])\s*-\s*Justification\s*:\s*(.*)/s);
+                    if (rMatch) qList.push({ id, question: qText, options, correctAnswer: rMatch[1].trim(), justification: rMatch[2].trim() });
+                });
+                return qList;
+            }, []);
+
+            const [screen, setScreen] = useState('home'); 
+            const [cIdx, setCIdx] = useState(0);
+            const [selOpt, setSelOpt] = useState(null);
+            const [isVal, setIsVal] = useState(false);
+            const [score, setScore] = useState(0);
+
+            const start = () => { setCIdx(0); setScore(0); setSelOpt(null); setIsVal(false); setScreen('quiz'); };
+            const valider = () => { if(!selOpt) return; setIsVal(true); if(selOpt === parseQCM[cIdx].correctAnswer) setScore(score+1); };
+            const next = () => { if(cIdx+1 < parseQCM.length) { setCIdx(cIdx+1); setSelOpt(null); setIsVal(false); } else setScreen('result'); };
+
+            if (screen === 'home') return (
+                <div className="flex flex-col items-center justify-center animate-fadeIn text-center space-y-6 pt-10">
+                    <div className="bg-orange-500/20 p-6 rounded-full border border-orange-500/30"><Icons.Shield className="w-16 h-16 text-orange-400" /></div>
+                    <h2 className="text-3xl font-black text-white">Évaluation Habilitation GAZ</h2>
+                    <p className="text-slate-400 max-w-lg">Base de données officielle : {parseQCM.length} questions professionnelles sur la distribution, la sécurité ATEX, le PEHD et les postes de détente.</p>
+                    <button onClick={start} className="py-4 px-8 bg-orange-600 hover:bg-orange-500 text-white font-black rounded-xl shadow-lg shadow-orange-600/30 transition-all flex items-center"><Icons.Play className="w-5 h-5 mr-3"/> Démarrer le Test</button>
+                </div>
+            );
+
+            if (screen === 'quiz') {
+                const q = parseQCM[cIdx];
+                const pct = ((cIdx+1)/parseQCM.length)*100;
+                return (
+                    <div className="max-w-4xl mx-auto animate-fadeIn pb-10">
+                        <div className="mb-6"><div className="flex justify-between text-xs font-bold text-slate-500 mb-2"><span>Question {cIdx+1} / {parseQCM.length}</span><span>{Math.round(pct)}%</span></div><div className="w-full bg-slate-800 rounded-full h-2"><div className="bg-orange-500 h-2 rounded-full transition-all" style={{width:`${pct}%`}}></div></div></div>
+                        <div className="glass-panel p-6 md:p-8 rounded-2xl">
+                            <h3 className="text-xl font-bold text-white mb-6 leading-relaxed"><span className="text-orange-500 mr-2">Q{q.id}.</span>{q.question}</h3>
+                            <div className="space-y-3">
+                                {q.options.map(o => {
+                                    let bClass = "w-full text-left p-4 rounded-xl border transition-all flex items-center ";
+                                    if(!isVal) bClass += selOpt === o.id ? "bg-orange-500/20 border-orange-500" : "bg-slate-800/50 border-slate-700 hover:border-orange-500/50";
+                                    else bClass += o.id === q.correctAnswer ? "bg-emerald-500/20 border-emerald-500" : (selOpt===o.id ? "bg-rose-500/20 border-rose-500" : "bg-slate-800/30 border-slate-800 opacity-50");
+                                    return (
+                                        <button key={o.id} disabled={isVal} onClick={()=>setSelOpt(o.id)} className={bClass}>
+                                            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm mr-4 ${!isVal && selOpt===o.id ? 'bg-orange-500 text-white' : (isVal && o.id===q.correctAnswer ? 'bg-emerald-500' : (isVal && selOpt===o.id ? 'bg-rose-500' : 'bg-slate-900 text-slate-400'))}`}>{o.id}</span>
+                                            <span className={`font-medium ${isVal && o.id===q.correctAnswer ? 'text-emerald-400' : 'text-slate-200'}`}>{o.text}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                            {isVal && <div className="mt-6 p-4 bg-blue-900/30 border border-blue-800/50 rounded-xl animate-fadeIn"><h4 className="font-bold text-blue-400 mb-1 text-sm uppercase">Justification :</h4><p className="text-blue-100 text-sm">{q.justification}</p></div>}
+                            <div className="mt-8 flex justify-end">
+                                {!isVal ? <button onClick={valider} disabled={!selOpt} className="py-3 px-6 bg-orange-600 hover:bg-orange-500 disabled:opacity-50 text-white font-bold rounded-xl transition-all">Valider</button>
+                                        : <button onClick={next} className="py-3 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-all flex items-center">{cIdx+1 < parseQCM.length ? 'Suivante' : 'Résultats'} <Icons.Play className="w-4 h-4 ml-2"/></button>}
+                            </div>
+                        </div>
+                    </div>
+                );
             }
-            return array;
-        }
 
-        /* --- FENÊTRES MODALES (Remplacement de Alert/Confirm) --- */
-        function showCustomAlert(title, message, type = "info") {
-            const modal = document.getElementById('custom-modal');
-            const icon = document.getElementById('modal-icon');
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-message').innerHTML = message;
-            
-            icon.className = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl ";
-            if (type === "error") icon.className += "bg-red-100 text-red-600 fas fa-times-circle";
-            else icon.className += "bg-blue-100 text-sonelgaz-blue fas fa-info-circle";
+            const rPct = Math.round((score/parseQCM.length)*100);
+            const passed = rPct >= 75;
+            return (
+                <div className="flex flex-col items-center justify-center animate-fadeIn text-center pt-10">
+                    <div className={`p-6 rounded-full mb-6 border ${passed?'bg-emerald-500/20 border-emerald-500/50':'bg-rose-500/20 border-rose-500/50'}`}>{passed ? <Icons.CheckSquare className="w-16 h-16 text-emerald-400"/> : <Icons.Activity className="w-16 h-16 text-rose-400"/>}</div>
+                    <h2 className={`text-4xl font-black mb-2 ${passed?'text-emerald-400':'text-rose-400'}`}>{passed ? 'Habilitation GAZ : Accordée' : 'Habilitation Refusée'}</h2>
+                    <p className="text-slate-400 text-lg mb-8">Score final : {score} / {parseQCM.length} ({rPct}%)</p>
+                    <button onClick={start} className="py-3 px-6 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-bold rounded-xl transition-all flex items-center"><Icons.Refresh className="w-5 h-5 mr-2"/> Refaire le test</button>
+                </div>
+            );
+        };
 
-            document.getElementById('modal-buttons').innerHTML = `<button onclick="document.getElementById('custom-modal').classList.add('hidden')" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-6 rounded-xl transition">OK, j'ai compris</button>`;
-            modal.classList.remove('hidden');
-        }
+        // ==========================================
+        // MODULE 2: SIMULATION RÉSEAU (GRAPHES)
+        // ==========================================
+        const GasCalcModule = () => {
+            const [pressure, setPressure] = useState(4.0); // bar
+            const [flow, setFlow] = useState(500); // m3/h
+            const [diameter, setDiameter] = useState(100); // mm (PEHD)
+            const [length, setLength] = useState(2000); // m
 
-        function showCustomConfirm(title, message, onConfirm, confirmText = "Confirmer", cancelText = "Annuler") {
-            const modal = document.getElementById('custom-modal');
-            document.getElementById('modal-title').innerText = title;
-            document.getElementById('modal-message').innerHTML = message;
-            document.getElementById('modal-icon').className = "w-16 h-16 bg-orange-100 text-sonelgaz-orange rounded-full flex items-center justify-center mx-auto mb-4 text-2xl fas fa-exclamation-triangle";
-            
-            document.getElementById('modal-buttons').innerHTML = `
-                <button id="btn-cancel" class="w-1/2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition">${cancelText}</button>
-                <button id="btn-confirm" class="w-1/2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl shadow-md transition">${confirmText}</button>
-            `;
-            
-            document.getElementById('btn-cancel').onclick = () => modal.classList.add('hidden');
-            document.getElementById('btn-confirm').onclick = () => { modal.classList.add('hidden'); onConfirm(); };
-            modal.classList.remove('hidden');
-        }
+            // Formule de Renouard simplifiée: P1^2 - P2^2 = 4810 * L * Q^1.82 / D^4.82 (pour MP)
+            const calcPressureDrop = useMemo(() => {
+                let data = [];
+                let p1 = parseFloat(pressure);
+                let L_total = parseFloat(length);
+                let Q = parseFloat(flow);
+                let D = parseFloat(diameter);
+                let failed = false;
 
-        /* --- INTERFACE D'ACCUEIL --- */
-        window.renderIntro = function() {
-            clearInterval(appState.timerInterval);
-            document.getElementById('global-timer').classList.add('hidden');
-            stopWebcam();
-            
-            const randomId = "CAND-" + Math.floor(10000 + Math.random() * 90000);
-            let distOptions = '<option value="">-- Choisir un district --</option>';
-            districts.forEach(d => { distOptions += `<option value="${d}">${d}</option>`; });
-            let servOptions = '<option value="">-- Choisir une spécialité --</option>';
-            services.forEach(s => { servOptions += `<option value="${s}">${s}</option>`; });
+                const K = 4810; // Cste gaz naturel
+                
+                for(let x=0; x<=L_total; x += (L_total/20)) {
+                    let dropTerm = (K * x * Math.pow(Q, 1.82)) / Math.pow(D, 4.82);
+                    let p2_squared = Math.pow(p1+1, 2) - dropTerm; // P absolue
+                    let p2 = p2_squared > 1 ? Math.sqrt(p2_squared) - 1 : 0; // P relative
+                    
+                    if (p2 <= 0) failed = true;
+                    data.push({ distance: Math.round(x), pression: failed ? 0 : parseFloat(p2.toFixed(2)) });
+                }
+                let finalP = data[data.length-1].pression;
+                let velocity = (353.7 * Q) / (Math.pow(D, 2) * (finalP + 1)); // Vitesse gaz (m/s)
 
-            appContainer.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden fade-in border border-slate-200">
-                    <div class="bg-slate-800 p-8 text-white text-center relative border-b-4 border-sonelgaz-blue">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-sonelgaz-blue rounded-bl-full opacity-20"></div>
-                        <i class="fas fa-file-signature text-5xl mb-4 text-sonelgaz-orange drop-shadow-md"></i>
-                        <h2 class="text-3xl font-bold font-arabic mb-1">منصة التقييم المهني</h2>
-                        <h3 class="text-xl font-bold tracking-wide">Test d'Habilitation HT/THT</h3>
-                        <p class="text-slate-300 mt-2 text-sm"><i class="fas fa-database mr-1"></i> Banques Intégrales : Exploitation, Contrôle, Maintenance, Lignards (ML), Essais, <span class="text-white font-bold">Télécom & SCADA</span></p>
+                return { data, finalP, velocity: isNaN(velocity)?0:velocity.toFixed(1), failed };
+            }, [pressure, flow, diameter, length]);
+
+            return (
+                <div className="space-y-6">
+                    <div className="glass-panel p-6 rounded-2xl">
+                        <div className="flex items-center mb-6 border-b border-slate-700 pb-4">
+                            <div className="bg-sky-500/20 p-3 rounded-lg mr-4 border border-sky-500/30"><Icons.Gauge className="w-6 h-6 text-sky-400"/></div>
+                            <div>
+                                <h2 className="text-xl font-bold text-white">Simulation de Perte de Charge (Réseau PEHD)</h2>
+                                <p className="text-sm text-slate-400">Graphe dynamique d'écoulement du gaz basé sur la formule de Renouard (MPB/MPC).</p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                            <div><label className="block text-xs font-bold text-slate-400 mb-1">Pression Amont (bar)</label><input type="number" step="0.1" className="w-full p-2 bg-slate-900 border border-slate-600 rounded text-white text-sm outline-none focus:border-sky-500" value={pressure} onChange={e=>setPressure(e.target.value)} /></div>
+                            <div><label className="block text-xs font-bold text-slate-400 mb-1">Débit Transité (m³/h)</label><input type="number" className="w-full p-2 bg-slate-900 border border-slate-600 rounded text-white text-sm outline-none focus:border-sky-500" value={flow} onChange={e=>setFlow(e.target.value)} /></div>
+                            <div><label className="block text-xs font-bold text-slate-400 mb-1">Diamètre Int. (mm)</label><input type="number" className="w-full p-2 bg-slate-900 border border-slate-600 rounded text-white text-sm outline-none focus:border-sky-500" value={diameter} onChange={e=>setDiameter(e.target.value)} /></div>
+                            <div><label className="block text-xs font-bold text-slate-400 mb-1">Longueur (m)</label><input type="number" className="w-full p-2 bg-slate-900 border border-slate-600 rounded text-white text-sm outline-none focus:border-sky-500" value={length} onChange={e=>setLength(e.target.value)} /></div>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <div className="col-span-1 space-y-4">
+                                <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                                    <p className="text-xs text-slate-400 font-bold uppercase">Pression Résiduelle Aval</p>
+                                    <p className={`text-3xl font-black mt-1 ${calcPressureDrop.failed ? 'text-rose-500' : 'text-emerald-400'}`}>{calcPressureDrop.failed ? 'RÉSEAU SATURÉ' : `${calcPressureDrop.finalP} bar`}</p>
+                                </div>
+                                <div className="bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
+                                    <p className="text-xs text-slate-400 font-bold uppercase">Vitesse du gaz en aval</p>
+                                    <p className={`text-2xl font-black mt-1 ${parseFloat(calcPressureDrop.velocity) > 20 ? 'text-orange-400' : 'text-sky-400'}`}>{calcPressureDrop.velocity} m/s</p>
+                                    <p className="text-[10px] text-slate-500 mt-1">L'érosion commence > 20 m/s</p>
+                                </div>
+                            </div>
+                            
+                            <div className="col-span-2 graph-container h-[300px]">
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mb-2 pl-2">Profil de Pression (Renouard)</p>
+                                <ResponsiveContainer width="100%" height="90%">
+                                    <AreaChart data={calcPressureDrop.data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                                        <XAxis dataKey="distance" stroke="#94a3b8" label={{ value: 'Distance (m)', position: 'insideBottomRight', fill: '#94a3b8', fontSize: 12, offset:-5 }} />
+                                        <YAxis stroke="#94a3b8" domain={[0, 'auto']} label={{ value: 'Pression (bar)', angle: -90, position: 'insideLeft', fill: '#94a3b8', fontSize: 12 }} />
+                                        <Tooltip contentStyle={{backgroundColor: '#0f172a', borderColor: '#334155', color:'#fff'}} />
+                                        <Area type="monotone" dataKey="pression" stroke="#38bdf8" strokeWidth={3} fill="#0ea5e9" fillOpacity={0.2} name="Pression" />
+                                    </AreaChart>
+                                </ResponsiveContainer>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // ==========================================
+        // MODULE 3 : COMMISSIONING GAZ
+        // ==========================================
+        const ChecklistModule = () => {
+            const [tasks, setTasks] = useState([
+                { id: 1, section: "CONTRÔLE SOUDEUR", desc: "Inspection visuelle des bourrelets PEHD ou radios tirs Acier validés (CND 100%).", done: false },
+                { id: 2, section: "ÉPREUVE MÉCANIQUE", desc: "Essai de résistance mécanique Air/Azote à 1.5x DP validé sans éclatement.", done: false },
+                { id: 3, section: "ÉTANCHÉITÉ", desc: "Essai d'étanchéité sous Air à DP validé (Stabilité manomètre après équilibre thermique).", done: false },
+                { id: 4, section: "POSTE DÉTENTE", desc: "Slam-Shut (Clapet) testé aux seuils Max et Min (Vérification du tarage du ressort).", done: false },
+                { id: 5, section: "MISE EN GAZ", desc: "Balayage et purge d'air totale. Concentration 100% Méthane vérifiée à l'explosimètre.", done: false },
+                { id: 6, section: "SÉCURITÉ", desc: "Contrôle THT (Odorisation) et recherche finale de fuites (Mille-bulles) sous pression Gaz.", done: false }
+            ]);
+
+            const toggleTask = (id) => setTasks(tasks.map(t => t.id === id ? { ...t, done: !t.done } : t));
+            const progress = Math.round((tasks.filter(t => t.done).length / tasks.length) * 100);
+
+            return (
+                <div className="glass-panel p-6 md:p-8 rounded-2xl">
+                    <div className="flex items-center mb-8 border-b border-slate-700 pb-4">
+                        <div className="bg-amber-500/20 p-3 rounded-xl mr-4 border border-amber-500/30"><Icons.CheckSquare className="w-6 h-6 text-amber-400"/></div>
+                        <div>
+                            <h2 className="text-xl font-bold text-white">Canevas Commissioning Réseau GAZ</h2>
+                            <p className="text-sm text-slate-400">PV de validation réglementaire avant l'injection du Gaz Naturel</p>
+                        </div>
                     </div>
 
-                    <div class="p-6 sm:p-10">
-                        <div class="flex border-b border-slate-200 mb-8">
-                            <button onclick="window.switchMode('declaratif')" class="w-1/2 py-3 transition-colors ${appState.mode === 'declaratif' ? 'tab-active' : 'tab-inactive'}"><i class="fas fa-user-check mr-2"></i> Mode Officiel</button>
-                            <button onclick="window.switchMode('anonyme')" class="w-1/2 py-3 transition-colors ${appState.mode === 'anonyme' ? 'tab-active' : 'tab-inactive'}"><i class="fas fa-user-secret mr-2"></i> Mode Entraînement</button>
+                    <div className="mb-8">
+                        <div className="flex justify-between text-sm font-bold text-slate-300 mb-3">
+                            <span>Progression du Procès-Verbal (PV)</span>
+                            <span className={progress === 100 ? "text-emerald-400 text-lg" : "text-lg text-slate-300"}>{progress}%</span>
                         </div>
-
-                        <div id="form-declaratif" class="${appState.mode === 'declaratif' ? 'block' : 'hidden'} space-y-4 fade-in">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50 p-6 rounded-xl border border-slate-100">
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Nom / اللقب</label><input type="text" id="in-nom" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue outline-none" placeholder="Nom de famille"></div>
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Prénom / الإسم</label><input type="text" id="in-prenom" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue outline-none" placeholder="Prénom"></div>
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Matricule / الرقم</label><input type="text" id="in-mat" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue outline-none" placeholder="Ex: 123456"></div>
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Société / الشركة</label><input type="text" id="in-soc" value="STOS - Sonelgaz" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue outline-none"></div>
-                                <div class="md:col-span-2"><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Poste Occupé / المنصب</label><input type="text" id="in-poste" class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue outline-none" placeholder="Ex: Ingénieur Télécom / Exploitant"></div>
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Spécialité / التخصص (Banque QCM)</label><select id="in-serv" class="w-full px-3 py-2 border rounded-lg bg-white">${servOptions}</select></div>
-                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">District / الناحية</label><select id="in-dist" class="w-full px-3 py-2 border rounded-lg bg-white">${distOptions}</select></div>
-                            </div>
+                        <div className="w-full bg-slate-800 rounded-full h-4 overflow-hidden border border-slate-700">
+                            <div className={`h-4 rounded-full transition-all duration-700 ease-out ${progress === 100 ? 'bg-emerald-500' : 'bg-amber-500'}`} style={{ width: `${progress}%` }}></div>
                         </div>
+                    </div>
 
-                        <div id="form-anonyme" class="${appState.mode === 'anonyme' ? 'block' : 'hidden'} space-y-4 fade-in">
-                            <div class="bg-orange-50 border-l-4 border-sonelgaz-orange p-4 mb-4 text-sm text-slate-700">Test d'entraînement anonyme. ID: <strong id="in-id" class="font-mono text-lg">${randomId}</strong></div>
-                            <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Choisissez la spécialité à réviser</label>
-                                <select id="in-serv-anon" class="w-full px-3 py-2 border rounded-lg bg-white focus:ring-2 focus:ring-sonelgaz-blue outline-none">
-                                    ${servOptions}
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="mt-6 border-t border-slate-200 pt-6">
-                            <div class="flex flex-col sm:flex-row items-center gap-4 bg-blue-50 p-5 rounded-xl border border-blue-200 mb-6">
-                                <div class="flex items-center gap-3">
-                                    <input type="checkbox" id="in-webcam" class="w-6 h-6 text-sonelgaz-blue rounded focus:ring-sonelgaz-blue cursor-pointer">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {tasks.map(task => (
+                            <div key={task.id} onClick={() => toggleTask(task.id)} className={`flex items-start p-4 rounded-xl border cursor-pointer transition-all ${task.done ? 'bg-emerald-500/10 border-emerald-500/50 shadow-sm' : 'bg-slate-800/50 border-slate-700 hover:border-amber-500/50'}`}>
+                                <div className={`w-6 h-6 shrink-0 rounded-md flex items-center justify-center mr-4 border-2 mt-0.5 transition-colors ${task.done ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-500 bg-slate-900'}`}>
+                                    {task.done && <Icons.CheckSquare className="w-4 h-4"/>}
                                 </div>
                                 <div>
-                                    <label for="in-webcam" class="font-bold text-slate-800 cursor-pointer text-sm block">
-                                        <i class="fas fa-video text-sonelgaz-blue mr-1"></i> Examen à Chaud (Surveillance Visio/Audio)
-                                    </label>
-                                    <span class="text-xs text-slate-500">Active la caméra et le micro pour simuler une session d'évaluation en direct avec l'Administrateur STOS.</span>
+                                    <span className={`text-[10px] font-black uppercase tracking-widest ${task.done ? 'text-emerald-400' : 'text-slate-500'}`}>{task.section}</span>
+                                    <p className={`font-semibold text-sm leading-tight mt-1 ${task.done ? 'text-slate-500 line-through' : 'text-slate-200'}`}>{task.desc}</p>
                                 </div>
                             </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // ==========================================
+        // MAIN APP DASHBOARD
+        // ==========================================
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('dashboard');
+
+            const TabBtn = ({ id, icon: Icon, label }) => (
+                <button onClick={() => setActiveTab(id)} className={`w-full flex items-center space-x-3 px-4 py-3.5 rounded-lg font-bold text-sm transition-all duration-200 ${activeTab === id ? 'bg-orange-600 text-white shadow-lg border border-orange-500/50' : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'}`}>
+                    <Icon className="w-5 h-5"/> <span>{label}</span>
+                </button>
+            );
+
+            return (
+                <div className="flex h-screen w-full relative bg-slate-950">
+                    
+                    {/* ARRIÈRE-PLAN GAZ + GLASSMORPHISM */}
+                    <div className="absolute inset-0 z-0 opacity-10 mix-blend-luminosity">
+                        {/* Motif tuyauterie industriel / flamme implicite */}
+                        <div className="w-full h-full bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-orange-900/40 via-slate-950 to-slate-950"></div>
+                    </div>
+
+                    {/* SIDEBAR LOGICIEL */}
+                    <div className="w-72 glass-dark text-white flex flex-col shadow-2xl z-20 hidden lg:flex shrink-0">
+                        <div className="p-5 flex items-center space-x-4 border-b border-slate-700/50 bg-slate-900/60">
+                            <div className="bg-orange-500 p-1.5 rounded-lg shadow-lg flex-shrink-0">
+                                <Icons.Flame className="w-6 h-6 text-white" />
+                            </div>
+                            <div>
+                                <h1 className="font-black text-lg tracking-tight text-white leading-tight">Sonelgaz STOS</h1>
+                                <p className="text-[10px] text-orange-400 font-bold uppercase tracking-widest">Test & Ingénierie GAZ</p>
+                            </div>
+                        </div>
                         
-                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Longueur de l'évaluation</label>
-                            <select id="in-num-q" class="w-full px-4 py-3 bg-slate-50 border rounded-lg focus:ring-2 focus:ring-sonelgaz-blue font-medium outline-none">
-                                <option value="5">Test Rapide (5 Questions aléatoires)</option>
-                                <option value="15" selected>Test Standard (15 Questions aléatoires)</option>
-                                <option value="all">Test Complet (Toutes les questions disponibles de la section)</option>
+                        <div className="p-4 flex-grow space-y-1.5 overflow-y-auto">
+                            <div className="pt-2 pb-2 px-2 text-[10px] font-black text-slate-500 uppercase tracking-widest">Menu Principal</div>
+                            <TabBtn id="dashboard" icon={Icons.Server} label="Tableau de bord" />
+                            <TabBtn id="quiz" icon={Icons.Shield} label="Habilitation GAZ (QCM)" />
+                            <TabBtn id="calc" icon={Icons.Gauge} label="Simulation Réseau (Graphes)" />
+                            <TabBtn id="check" icon={Icons.CheckSquare} label="Commissioning (PV)" />
+                        </div>
+
+                        {/* SIGNATURE MINIMISÉE EN BAS */}
+                        <div className="p-5 bg-slate-900/90 border-t border-slate-800 text-center mt-auto">
+                            <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mb-1">Plateforme réalisée par</p>
+                            <p className="text-xs font-bold text-orange-400">MR. HAKMI ABDELKRIM</p>
+                            <p className="text-[9px] text-slate-400 mt-0.5">INGÉNIEUR ÉTUDES - SONELGAZ STOS/DIST ORAN</p>
+                        </div>
+                    </div>
+
+                    {/* MAIN AREA */}
+                    <div className="flex-1 flex flex-col h-full relative z-10 overflow-y-auto">
+                        
+                        {/* Header Mobile */}
+                        <div className="lg:hidden glass-dark p-4 flex justify-between items-center text-white sticky top-0 z-30 shadow-md">
+                            <div className="flex items-center space-x-2"><Icons.Flame className="w-5 h-5 text-orange-500"/><span className="font-black text-orange-400">STOS GAZ</span></div>
+                            <select className="bg-slate-800 text-xs p-2 rounded border border-slate-700 outline-none" value={activeTab} onChange={e=>setActiveTab(e.target.value)}>
+                                <option value="dashboard">Tableau de bord</option>
+                                <option value="quiz">Habilitation GAZ</option>
+                                <option value="calc">Simulation Réseau</option>
+                                <option value="check">Commissioning (PV)</option>
                             </select>
                         </div>
 
-                        <button onclick="window.startExam()" class="mt-6 w-full bg-sonelgaz-blue hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition transform hover:-translate-y-1 flex justify-center items-center gap-2">
-                            Démarrer le Test (1 Heure) <i class="fas fa-stopwatch"></i>
-                        </button>
-                    </div>
-                </div>
-            `;
-        }
+                        <div className="p-4 md:p-6 lg:p-8 w-full max-w-6xl mx-auto space-y-6">
+                            
+                            {activeTab === 'dashboard' && (
+                                <div className="animate-fadeIn space-y-8 pb-10">
+                                    <header className="mb-10 text-white">
+                                        <h1 className="text-4xl md:text-6xl font-black tracking-tight drop-shadow-lg">Plateforme Ingénierie & Distribution GAZ</h1>
+                                        <p className="text-slate-300 mt-4 text-xl max-w-3xl font-light drop-shadow-md">Logiciel professionnel pour les calculs de pertes de charge, le commissioning des postes et la validation des habilitations gazières.</p>
+                                    </header>
 
-        window.switchMode = function(mode) { appState.mode = mode; window.renderIntro(); }
-
-        /* --- GESTION DE LA WEBCAM --- */
-        async function startWebcam() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                appState.mediaStream = stream;
-                document.getElementById('webcam-video').srcObject = stream;
-                document.getElementById('webcam-container').style.display = 'block';
-                appState.webcamActive = true;
-                
-                appState.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const source = appState.audioContext.createMediaStreamSource(stream);
-                appState.analyser = appState.audioContext.createAnalyser();
-                appState.analyser.fftSize = 256;
-                source.connect(appState.analyser);
-                const dataArray = new Uint8Array(appState.analyser.frequencyBinCount);
-                const audioBar = document.getElementById('audio-bar');
-                
-                function drawAudio() {
-                    if(!appState.webcamActive) return;
-                    requestAnimationFrame(drawAudio);
-                    appState.analyser.getByteFrequencyData(dataArray);
-                    let sum = 0;
-                    for(let i=0; i<dataArray.length; i++) sum += dataArray[i];
-                    let average = sum / dataArray.length;
-                    audioBar.style.height = Math.min(100, (average / 50) * 100) + '%';
-                    if (average > 30) audioBar.style.background = '#f39200'; else audioBar.style.background = '#22c55e';
-                }
-                drawAudio();
-
-            } catch (err) {
-                showCustomAlert("Caméra/Micro inaccessibles", "Impossible d'activer le mode Visio (Refus ou absence de matériel). L'examen va se poursuivre en mode normal sans surveillance.", "error");
-                appState.webcamActive = false;
-            }
-        }
-
-        function stopWebcam() {
-            if (appState.mediaStream) { appState.mediaStream.getTracks().forEach(track => track.stop()); appState.mediaStream = null; }
-            if (appState.audioContext) { appState.audioContext.close(); appState.audioContext = null; }
-            document.getElementById('webcam-container').style.display = 'none';
-            appState.webcamActive = false;
-        }
-
-        function startTimer() {
-            appState.timeRemaining = 3600; // 60 mins
-            clearInterval(appState.timerInterval);
-            document.getElementById('global-timer').classList.remove('hidden');
-            document.getElementById('global-timer').classList.remove('bg-red-700', 'animate-pulse');
-            document.getElementById('global-timer').classList.add('bg-red-600');
-            updateTimerDisplay();
-            appState.timerInterval = setInterval(() => {
-                appState.timeRemaining--; updateTimerDisplay();
-                if (appState.timeRemaining <= 0) { clearInterval(appState.timerInterval); autoSubmitTest(); }
-            }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const el = document.getElementById('timer-display');
-            if(!el) return;
-            const h = Math.floor(appState.timeRemaining / 3600);
-            const m = Math.floor((appState.timeRemaining % 3600) / 60);
-            const s = appState.timeRemaining % 60;
-            el.innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            const timerContainer = document.getElementById('global-timer');
-            if (appState.timeRemaining < 300) { timerContainer.classList.remove('bg-red-600'); timerContainer.classList.add('bg-red-700', 'animate-pulse'); }
-        }
-
-        function autoSubmitTest() {
-            while (appState.answers.length < appState.testQuestions.length) { appState.answers.push({ questionIndex: appState.answers.length, selected: -1, isCorrect: false }); }
-            window.saveResultAndRender();
-        }
-
-        window.startExam = function() {
-            if (appState.mode === 'declaratif') {
-                const fields = ['nom', 'prenom', 'mat', 'soc', 'poste', 'serv', 'dist'];
-                let isValid = true;
-                fields.forEach(f => {
-                    const val = document.getElementById(`in-${f}`).value.trim();
-                    if(!val) isValid = false;
-                    appState[f === 'mat' ? 'matricule' : (f==='soc' ? 'societe' : (f==='serv' ? 'service' : (f==='dist' ? 'district' : f)))] = val.toUpperCase();
-                });
-                if (!isValid) return showCustomAlert("Erreur", "Veuillez remplir tous les champs obligatoires.", "error");
-                appState.id = `${appState.matricule}-${Math.floor(100+Math.random()*900)}`;
-            } else {
-                const serviceVal = document.getElementById('in-serv-anon').value;
-                if (!serviceVal) return showCustomAlert("Erreur", "Veuillez choisir une spécialité.", "error");
-                appState.id = document.getElementById('in-id').innerText;
-                appState.nom = "ANONYME"; appState.prenom = ""; appState.matricule = "N/A";
-                appState.societe = "N/A"; appState.poste = "N/A"; appState.district = "N/A";
-                appState.service = serviceVal;
-            }
-
-            const wantWebcam = document.getElementById('in-webcam').checked;
-            if (wantWebcam) startWebcam();
-
-            // SÉLECTION BASE DE DONNÉES (Les tableaux intégraux ci-dessus)
-            let basePool = [];
-            if (appState.service === 'Contrôle électrique') basePool = JSON.parse(JSON.stringify(poolControle));
-            else if (appState.service === 'Maintenance Poste') basePool = JSON.parse(JSON.stringify(poolMaintenance));
-            else if (appState.service === 'Maintenance Ligne (ML)') basePool = JSON.parse(JSON.stringify(poolMaintenanceLigne));
-            else if (appState.service === 'CE ESSAIS/ANALYSES') basePool = JSON.parse(JSON.stringify(poolEssaisAnalyses));
-            else if (appState.service === 'Télécom & Téléconduite') basePool = JSON.parse(JSON.stringify(poolTelecom));
-            else basePool = JSON.parse(JSON.stringify(poolExploitation)); 
-
-            const nbReq = document.getElementById('in-num-q').value;
-            basePool = shuffleArray(basePool);
-            
-            if (nbReq !== 'all') appState.testQuestions = basePool.slice(0, Math.min(parseInt(nbReq), basePool.length));
-            else appState.testQuestions = basePool;
-            
-            appState.currentQuestion = 0; 
-            appState.answers = appState.testQuestions.map((_, i) => ({ questionIndex: i, selected: -1, isCorrect: false }));
-            startTimer();
-            window.renderQuestion();
-        }
-
-        window.renderQuestion = function() {
-            const qIndex = appState.currentQuestion;
-            const q = appState.testQuestions[qIndex];
-            const progress = ((qIndex) / appState.testQuestions.length) * 100;
-            const typeBg = q.type === "Épreuve Écrite" ? "bg-blue-50 text-sonelgaz-blue border-blue-200" : "bg-orange-50 text-sonelgaz-orange border-orange-200";
-
-            let optionsHtml = '';
-            const previouslySelected = appState.answers[qIndex].selected;
-
-            q.options.forEach((opt, index) => {
-                const isChecked = (previouslySelected === index) ? 'checked' : '';
-                optionsHtml += `
-                    <div class="relative mb-3 fade-in" style="animation-delay: ${index * 0.05}s">
-                        <input type="radio" name="q-option" id="opt-${index}" value="${index}" class="radio-custom sr-only peer" onchange="window.selectAnswer(${index})" ${isChecked}>
-                        <label for="opt-${index}" class="flex items-start p-4 bg-white border-2 border-slate-100 rounded-xl cursor-pointer hover:bg-slate-50 transition-all peer-focus:ring-2 peer-focus:ring-sonelgaz-blue shadow-sm">
-                            <div class="radio-circle w-5 h-5 border-2 border-slate-300 rounded-full mr-3 mt-0.5 flex-shrink-0 flex items-center justify-center transition-colors"><div class="w-2.5 h-2.5 bg-white rounded-full"></div></div>
-                            <span class="text-slate-700 font-medium text-sm md:text-base">${opt}</span>
-                        </label>
-                    </div>`;
-            });
-
-            // Ajout du support Image si présent dans la base
-            const imageHtml = q.image ? `<div class="mt-4 mb-4 p-4 bg-blue-50 border border-blue-100 rounded-lg text-center text-sm font-bold text-sonelgaz-blue shadow-inner"><i class="fas fa-image text-2xl block mb-2"></i> ${q.image}</div>` : '';
-
-            const identity = appState.mode === 'declaratif' ? `${appState.nom} ${appState.prenom}` : `Anonyme`;
-            const prevBtnState = qIndex === 0 ? 'invisible' : '';
-            const nextBtnText = qIndex === appState.testQuestions.length - 1 ? 'Terminer / إنهاء <i class="fas fa-flag-checkered"></i>' : 'Suivant / التالي <i class="fas fa-arrow-right"></i>';
-            const nextBtnColor = qIndex === appState.testQuestions.length - 1 ? 'bg-green-600 hover:bg-green-700' : 'bg-sonelgaz-blue hover:bg-blue-700';
-
-            appContainer.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl overflow-hidden fade-in border border-slate-200 flex flex-col h-[85vh] max-h-[800px]">
-                    <div class="p-4 border-b border-slate-100 shrink-0 bg-slate-50">
-                        <div class="flex justify-between items-center mb-3">
-                            <div class="flex flex-col">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase">Candidat (${appState.service})</span>
-                                <span class="text-sm font-bold text-slate-700"><i class="fas fa-user-tag text-sonelgaz-blue mr-1"></i> ${identity}</span>
-                            </div>
-                            <div class="flex flex-col items-end">
-                                <span class="text-sm font-bold bg-white border px-3 py-1 rounded-lg text-slate-600 shadow-sm">Q ${qIndex + 1} / ${appState.testQuestions.length}</span>
-                            </div>
-                        </div>
-                        <div class="w-full bg-slate-200 rounded-full h-1.5"><div class="bg-sonelgaz-orange h-1.5 rounded-full transition-all duration-500" style="width: ${progress}%"></div></div>
-                    </div>
-
-                    <div class="p-6 overflow-y-auto flex-grow custom-scrollbar bg-slate-50">
-                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md text-xs font-bold border ${typeBg} mb-5 shadow-sm"><i class="fas fa-tag"></i> ${q.theme}</div>
-                        <h2 class="text-lg md:text-xl font-bold text-slate-800 mb-2 leading-relaxed border-l-4 border-sonelgaz-blue pl-4">${q.question}</h2>
-                        ${imageHtml}
-                        <div class="options-container space-y-2 mt-4">${optionsHtml}</div>
-                    </div>
-
-                    <div class="p-4 border-t border-slate-100 bg-white shrink-0 flex justify-between items-center">
-                        <button onclick="window.confirmQuit()" class="text-slate-500 hover:text-red-600 font-bold text-sm px-4 py-2 rounded-lg hover:bg-red-50 transition border border-transparent hover:border-red-200">
-                            <i class="fas fa-times mr-1"></i> Quitter / خروج
-                        </button>
-                        <div class="flex gap-3">
-                            <button onclick="window.prevQuestion()" class="${prevBtnState} bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-3 px-6 rounded-xl shadow-sm transition flex items-center gap-2">
-                                <i class="fas fa-arrow-left"></i> Précédent
-                            </button>
-                            <button onclick="window.nextQuestion()" class="${nextBtnColor} text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center gap-2">
-                                ${nextBtnText}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        window.selectAnswer = function(selectedIndex) {
-            const qIndex = appState.currentQuestion;
-            const q = appState.testQuestions[qIndex];
-            appState.answers[qIndex].selected = selectedIndex;
-            appState.answers[qIndex].isCorrect = (selectedIndex === q.correctIndex);
-        }
-
-        window.prevQuestion = function() {
-            if (appState.currentQuestion > 0) { appState.currentQuestion--; window.renderQuestion(); }
-        }
-
-        window.nextQuestion = function() {
-            if (appState.answers[appState.currentQuestion].selected === -1) {
-                showCustomAlert("Réponse manquante", "Veuillez sélectionner une réponse pour pouvoir avancer / يرجى اختيار إجابة للمتابعة.", "error"); return;
-            }
-            if (appState.currentQuestion < appState.testQuestions.length - 1) {
-                appState.currentQuestion++; window.renderQuestion();
-            } else {
-                window.saveResultAndRender();
-            }
-        }
-
-        window.confirmQuit = function() {
-            showCustomConfirm(
-                "Annuler l'examen ?", 
-                "Attention, si vous quittez maintenant, l'examen sera annulé et vos résultats ne seront pas sauvegardés.", 
-                () => {
-                    clearInterval(appState.timerInterval);
-                    document.getElementById('global-timer').classList.add('hidden');
-                    stopWebcam();
-                    window.renderIntro();
-                }, 
-                "Oui, quitter", "Continuer l'examen"
-            );
-        }
-
-        window.saveResultAndRender = function() {
-            clearInterval(appState.timerInterval);
-            document.getElementById('global-timer').classList.add('hidden');
-            stopWebcam();
-            
-            appState.score = appState.answers.filter(a => a.isCorrect).length;
-            const percentage = Math.round((appState.score / appState.testQuestions.length) * 100);
-            const timeUsed = 3600 - appState.timeRemaining;
-            
-            const resultData = {
-                id: appState.id, mode: appState.mode,
-                nom: appState.nom, prenom: appState.prenom, matricule: appState.matricule, 
-                societe: appState.societe, poste: appState.poste, service: appState.service, district: appState.district,
-                score: appState.score, total: appState.testQuestions.length, percentage: percentage, 
-                date: new Date().toLocaleString('fr-FR'), timeUsed: timeUsed,
-                answers: JSON.parse(JSON.stringify(appState.answers)),
-                testSnapshot: JSON.parse(JSON.stringify(appState.testQuestions))
-            };
-            
-            window.allCandidatesResults.unshift(resultData);
-            saveToLocalStorage(); 
-            renderFinalScore(resultData);
-        }
-
-        function renderFinalScore(data) {
-            let statusClass, statusText, statusIcon;
-            if (data.percentage >= 80) { statusClass = "text-green-700 bg-green-50 border-green-500"; statusText = "Avis Favorable / مقبول"; statusIcon = "fa-check-double"; } 
-            else if (data.percentage >= 60) { statusClass = "text-sonelgaz-orange bg-orange-50 border-sonelgaz-orange"; statusText = "Avis Réservé / بتحفظ"; statusIcon = "fa-triangle-exclamation"; } 
-            else { statusClass = "text-red-700 bg-red-50 border-red-500"; statusText = "Avis Défavorable / مرفوض"; statusIcon = "fa-skull-crossbones"; }
-
-            appContainer.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden fade-in border border-slate-200">
-                    <div class="bg-slate-900 p-8 text-white text-center border-b-4 border-sonelgaz-orange relative">
-                        <i class="fas fa-clipboard-check text-5xl mb-4 text-sonelgaz-blue drop-shadow-lg"></i>
-                        <h2 class="text-2xl font-bold font-arabic mb-1">تقرير التقييم النهائي</h2>
-                        <h2 class="text-xl font-bold">Fin de l'évaluation (${data.service})</h2>
-                        <p class="text-slate-300 mt-2 text-sm">${data.mode === 'declaratif' ? `${data.nom} ${data.prenom} | Mat: ${data.matricule}` : `Anonyme (${data.id})`}</p>
-                    </div>
-                    <div class="p-8 text-center bg-slate-50">
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6 inline-block w-full max-w-sm mx-auto">
-                            <h3 class="text-slate-400 font-bold uppercase text-xs mb-2">Score Final / النتيجة</h3>
-                            <div class="text-6xl font-black text-slate-800">${data.score} <span class="text-2xl text-slate-400">/ ${data.total}</span></div>
-                            <div class="mt-4 text-sm font-semibold border-l-4 pl-4 py-2 ${statusClass} rounded-r-lg text-left"><i class="fas ${statusIcon} mr-2"></i> ${statusText}</div>
-                        </div>
-                        <div class="flex flex-col gap-3 justify-center items-center">
-                            <button onclick="window.renderCandidateCorrection()" class="w-full max-w-xs bg-sonelgaz-blue hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center justify-center gap-2">
-                                <i class="fas fa-tasks"></i> Voir la Correction / عرض التصحيح
-                            </button>
-                            <button onclick="window.renderIntro()" class="w-full max-w-xs bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-xl shadow-md transition flex items-center justify-center gap-2">
-                                <i class="fas fa-home"></i> Accueil / الرئيسية
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // --- NOUVEAU: VUE CORRECTION POUR LE CANDIDAT (Avec Images/Photos Bilingue) ---
-        window.renderCandidateCorrection = function() {
-            const cand = window.allCandidatesResults[0]; // Dernier test
-            let detailsHtml = ''; 
-            
-            cand.answers.forEach((ans, i) => {
-                const q = cand.testSnapshot[ans.questionIndex];
-                const selectedText = ans.selected === -1 ? "Non répondu / لم يتم الرد" : q.options[ans.selected];
-                const isCorrect = ans.isCorrect;
-                
-                const bgColor = isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200";
-                const iconColor = isCorrect ? "text-green-600" : "text-red-600";
-                const iconClass = isCorrect ? "fa-check-circle" : "fa-times-circle";
-                const badgeBg = isCorrect ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800";
-                
-                const imageHtml = q.image ? `<div class="mt-4 mb-2 p-3 bg-white border border-slate-200 rounded-lg text-center text-sm font-bold text-slate-500 shadow-sm"><i class="fas fa-image text-sonelgaz-blue text-xl block mb-2"></i> ${q.image}</div>` : '';
-
-                detailsHtml += `
-                    <div class="mb-4 p-5 ${bgColor} border rounded-xl shadow-sm">
-                        <p class="text-sm font-bold text-slate-800 mb-3 leading-relaxed">
-                            <span class="${badgeBg} px-2 py-0.5 rounded text-xs mr-2 shadow-sm">Q${i+1} | ${q.theme}</span>
-                            ${q.question}
-                        </p>
-                        ${imageHtml}
-                        <div class="bg-white/60 p-3 rounded-lg border border-white/50">
-                            <p class="text-xs md:text-sm ${iconColor} mb-2 font-semibold"><i class="fas ${iconClass} mr-1"></i> <strong>Votre Réponse :</strong> ${selectedText}</p>
-                            ${!isCorrect ? `<p class="text-xs md:text-sm text-green-700 font-semibold"><i class="fas fa-check mr-1"></i> <strong>Bonne Réponse :</strong> ${q.options[q.correctIndex]}</p>` : ''}
-                        </div>
-                        <div class="mt-3 bg-blue-50/50 p-3 border-l-4 border-sonelgaz-blue rounded-r-lg">
-                            <p class="text-xs text-blue-900 leading-relaxed"><strong>Justification :</strong> ${q.justification}</p>
-                        </div>
-                    </div>`;
-            });
-
-            appContainer.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden fade-in border border-slate-200 h-[90vh] flex flex-col">
-                    <div class="bg-slate-900 p-6 flex justify-between items-center text-white border-b-4 border-sonelgaz-orange shrink-0 no-print">
-                        <div class="flex items-center gap-3">
-                            <i class="fas fa-check-double text-sonelgaz-blue text-3xl"></i>
-                            <div><h2 class="text-xl font-bold">Correction Détaillée / التصحيح المفصل</h2><p class="text-sm text-slate-400">${cand.nom} ${cand.prenom} | ${cand.percentage}%</p></div>
-                        </div>
-                        <div class="flex gap-3">
-                            <button onclick="window.print()" class="bg-sonelgaz-blue hover:bg-blue-600 px-4 py-2 rounded-xl text-sm font-bold transition shadow-md"><i class="fas fa-file-pdf mr-2"></i> Enregistrer PDF</button>
-                            <button onclick="window.renderIntro()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition shadow-md"><i class="fas fa-home mr-2"></i> Terminer</button>
-                        </div>
-                    </div>
-                    <div class="p-6 md:p-10 flex-grow overflow-y-auto custom-scrollbar bg-slate-50 print:bg-white print:p-0">
-                        <!-- En-tête visible uniquement à l'impression -->
-                        <div class="hidden print:block text-center mb-8 border-b-2 pb-4">
-                            <h1 class="text-2xl font-bold text-slate-800">Rapport de Test d'Habilitation SONELGAZ</h1>
-                            <p class="text-lg">Candidat : ${cand.nom} ${cand.prenom} | Score : ${cand.percentage}% | Spécialité : ${cand.service}</p>
-                        </div>
-                        <div class="space-y-2">
-                            ${detailsHtml}
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
-
-        // --- DASHBOARD ADMIN ---
-        window.showAdminLogin = function() {
-            appContainer.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden fade-in p-8 text-center relative border border-slate-200">
-                    <button onclick="window.renderIntro()" class="absolute top-4 right-4 text-slate-400 hover:bg-slate-100 p-2 rounded-lg transition"><i class="fas fa-times"></i></button>
-                    <div class="w-20 h-20 bg-slate-800 text-sonelgaz-orange rounded-full flex items-center justify-center mx-auto mb-6"><i class="fas fa-user-shield text-3xl"></i></div>
-                    <h2 class="text-2xl font-bold mb-4">Espace Administrateur</h2>
-                    <input type="password" id="admin-password" class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-xl text-center text-2xl tracking-[0.3em] mb-4 outline-none focus:ring-2 focus:ring-sonelgaz-blue" placeholder="••••••••">
-                    <button onclick="window.verifyAdmin()" class="w-full bg-sonelgaz-blue text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-blue-700 transition"><i class="fas fa-unlock"></i> Connexion</button>
-                </div>
-            `;
-        }
-
-        window.verifyAdmin = function() {
-            if (document.getElementById('admin-password').value === '15041978') window.renderAdminDashboard(); 
-            else showCustomAlert("Erreur", "Code d'accès administrateur incorrect.", "error");
-        }
-
-        window.exportToCSV = function() {
-            if (window.allCandidatesResults.length === 0) return showCustomAlert("Exportation impossible", "La base de données est vide.", "error");
-            let csvContent = "\uFEFF Date;Identifiant;Mode;Nom;Prénom;Matricule;Société;Poste;Service;District;Score;Total Questions;Pourcentage;Temps (secondes)\n";
-            window.allCandidatesResults.forEach(res => {
-                let row = [ res.date, res.id, res.mode, res.nom, res.prenom, res.matricule, res.societe, res.poste, res.service, res.district, res.score, res.total, res.percentage + "%", res.timeUsed ];
-                csvContent += row.map(e => `"${(e || '').toString().replace(/"/g, '""')}"`).join(";") + "\n";
-            });
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a"); link.setAttribute("href", url); link.setAttribute("download", `Resultats_Habilitation_Sonelgaz_${new Date().toISOString().slice(0,10)}.csv`);
-            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-        }
-
-        window.renderAdminDashboard = function() {
-            let tableRows = window.allCandidatesResults.length === 0 ? `<tr><td colspan=\"5\" class=\"p-8 text-center text-slate-400\"><i class=\"fas fa-database text-3xl mb-3 block\"></i>Base de données vide.</td></tr>` : '';
-            window.allCandidatesResults.forEach((res, index) => {
-                let badgeClass = res.percentage >= 80 ? "bg-green-100 text-green-800" : (res.percentage >= 60 ? "bg-orange-100 text-orange-800" : "bg-red-100 text-red-800");
-                const identity = res.mode === 'declaratif' ? `<div class="font-bold text-slate-800">${res.nom} ${res.prenom}</div><div class="text-[10px] text-slate-500">Mat: ${res.matricule} | ${res.district}</div>` : `<div class="font-mono text-sonelgaz-blue font-bold">${res.id}</div>`;
-                tableRows += `
-                    <tr class="hover:bg-slate-50 border-b border-slate-100">
-                        <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">${res.date.split(' ')[0]}<br>${res.date.split(' ')[1]}</td>
-                        <td class="px-4 py-3">${identity}</td>
-                        <td class="px-4 py-3 text-xs text-slate-600">${res.poste}<br><span class="font-bold text-sonelgaz-blue">${res.service}</span></td>
-                        <td class="px-4 py-3 text-center"><span class="px-2 py-1 text-xs font-bold rounded ${badgeClass}">${res.percentage}%</span></td>
-                        <td class="px-4 py-3 text-center"><button onclick="window.viewCandidateDetailsAdmin(${index})" class="text-sonelgaz-blue bg-blue-50 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-blue-100 transition"><i class="fas fa-search"></i> Détails</button></td>
-                    </tr>`;
-            });
-
-            appContainer.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-6xl overflow-hidden fade-in border border-slate-200 flex flex-col h-[90vh]">
-                    <div class="bg-slate-900 p-5 flex flex-wrap justify-between items-center text-white border-b-4 border-sonelgaz-orange gap-4">
-                        <div>
-                            <h2 class="text-xl font-bold"><i class="fas fa-chart-pie text-sonelgaz-orange mr-2"></i> Tableau de Bord Admin</h2>
-                            <span class="text-green-400 text-xs"><i class="fas fa-hard-drive"></i> Mode Local Sécurisé</span>
-                        </div>
-                        <div class="flex flex-wrap gap-3">
-                            <button onclick="window.exportToCSV()" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center shadow-md"><i class="fas fa-file-excel mr-2"></i> Exporter (Excel)</button>
-                            <button onclick="window.confirmClearDialog()" class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center shadow-md text-white"><i class="fas fa-trash-alt mr-2"></i> Purger</button>
-                            <button onclick="window.renderIntro()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-sm font-bold transition flex items-center shadow-md"><i class="fas fa-sign-out-alt mr-2"></i> Quitter</button>
-                        </div>
-                    </div>
-                    <div class="overflow-auto flex-grow bg-slate-50">
-                        <table class="min-w-full divide-y divide-slate-200">
-                            <thead class="bg-slate-100 sticky top-0 shadow-sm z-10">
-                                <tr>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Date</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Identité</th>
-                                    <th class="px-4 py-3 text-left text-xs font-bold text-slate-500 uppercase">Poste / Service</th>
-                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase">Score</th>
-                                    <th class="px-4 py-3 text-center text-xs font-bold text-slate-500 uppercase">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white">${tableRows}</tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-        }
-
-        window.confirmClearDialog = function() {
-            showCustomConfirm(
-                "Purger les données ?",
-                "Cette action est définitive. Tous les rapports d'examen locaux de cette session seront effacés.",
-                () => { window.allCandidatesResults = []; saveToLocalStorage(); window.renderAdminDashboard(); },
-                "Oui, purger"
-            );
-        }
-
-        window.viewCandidateDetailsAdmin = function(index) {
-            const cand = window.allCandidatesResults[index];
-            let detailsHtml = ''; 
-            
-            cand.answers.forEach((ans, i) => {
-                const q = cand.testSnapshot[ans.questionIndex];
-                const selectedText = ans.selected === -1 ? "Non répondu (Ignoré)" : q.options[ans.selected];
-                const isCorrect = ans.isCorrect;
-                
-                const bgColor = isCorrect ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200";
-                const iconColor = isCorrect ? "text-green-600" : "text-red-600";
-                const iconClass = isCorrect ? "fa-check-circle" : "fa-times-circle";
-                const badgeBg = isCorrect ? "bg-green-200 text-green-800" : "bg-red-200 text-red-800";
-
-                detailsHtml += `
-                    <div class="mb-3 p-4 ${bgColor} border rounded-lg shadow-sm">
-                        <p class="text-sm font-bold text-slate-800 mb-2"><span class="${badgeBg} px-2 py-0.5 rounded text-xs mr-2">Q${i+1} | ${q.theme}</span>${q.question}</p>
-                        <p class="text-xs ${iconColor} mb-1 font-semibold"><i class="fas ${iconClass} mr-1"></i> Réponse : ${selectedText}</p>
-                        ${!isCorrect ? `<p class="text-xs text-green-700 font-semibold mt-1"><i class="fas fa-check mr-1"></i> Requise : ${q.options[q.correctIndex]}</p>` : ''}
-                    </div>`;
-            });
-
-            const timeStr = `${Math.floor(cand.timeUsed / 60)} min ${cand.timeUsed % 60} sec`;
-
-            appContainer.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden fade-in border border-slate-200 h-[85vh] flex flex-col">
-                    <div class="bg-slate-100 p-4 border-b flex justify-between shrink-0">
-                        <button onclick="window.renderAdminDashboard()" class="text-slate-600 font-bold text-sm bg-white px-4 py-2 rounded-lg border shadow-sm hover:bg-slate-50"><i class="fas fa-arrow-left mr-2"></i> Retour</button>
-                        <span class="font-mono text-xs text-slate-400 pt-2">Session ID: ${cand.id}</span>
-                    </div>
-                    <div class="p-6 flex-grow overflow-y-auto bg-slate-50 flex flex-col gap-6">
-                        <div class="bg-slate-900 rounded-xl p-6 shadow-lg text-white border-b-4 border-sonelgaz-blue flex justify-between items-center">
-                            <div>
-                                <h3 class="font-bold text-xl mb-1 flex items-center gap-2"><i class="fas fa-brain text-sonelgaz-blue"></i> Analyse Intelligente HSE</h3>
-                                <p class="text-sm text-slate-400">Générez un rapport complet sur les failles techniques de ce candidat.</p>
-                            </div>
-                            <button onclick="window.renderAIAnalysisPage(${index})" class="bg-sonelgaz-blue hover:bg-blue-600 text-white font-bold py-3 px-6 rounded-xl transition shadow-md flex items-center gap-2">Générer Rapport <i class="fas fa-magic"></i></button>
-                        </div>
-                        <div class="bg-white p-6 rounded-xl border shadow-sm">
-                            <div class="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 class="text-2xl font-bold">${cand.nom} ${cand.prenom}</h3>
-                                    <p class="text-sm font-bold text-sonelgaz-blue uppercase mt-1">${cand.service}</p>
-                                    <p class="text-xs text-slate-500">${cand.poste} | ${cand.societe}</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div onClick={()=>setActiveTab('quiz')} className="glass-panel p-6 rounded-2xl shadow-xl hover:bg-slate-800/80 transition-all cursor-pointer group flex items-start border-t-4 border-t-orange-500">
+                                            <div className="bg-orange-500/20 p-4 rounded-xl mr-5 border border-orange-500/30 group-hover:scale-110 transition-transform"><Icons.Shield className="w-8 h-8 text-orange-400"/></div>
+                                            <div><h3 className="font-black text-white text-xl">Habilitation GAZ (QCM)</h3><p className="text-sm text-slate-400 mt-2 font-medium">100 questions officielles : Réglementation, ATEX, PEHD et détendeurs.</p></div>
+                                        </div>
+                                        <div onClick={()=>setActiveTab('calc')} className="glass-panel p-6 rounded-2xl shadow-xl hover:bg-slate-800/80 transition-all cursor-pointer group flex items-start border-t-4 border-t-sky-500">
+                                            <div className="bg-sky-500/20 p-4 rounded-xl mr-5 border border-sky-500/30 group-hover:scale-110 transition-transform"><Icons.Gauge className="w-8 h-8 text-sky-400"/></div>
+                                            <div><h3 className="font-black text-white text-xl">Simulation Réseau</h3><p className="text-sm text-slate-400 mt-2 font-medium">Calcul et tracé graphique des pertes de charge (Formule de Renouard).</p></div>
+                                        </div>
+                                        <div onClick={()=>setActiveTab('check')} className="glass-panel p-6 rounded-2xl shadow-xl hover:bg-slate-800/80 transition-all cursor-pointer group flex items-start border-t-4 border-t-amber-500 md:col-span-2">
+                                            <div className="bg-amber-500/20 p-4 rounded-xl mr-5 border border-amber-500/30 group-hover:scale-110 transition-transform"><Icons.CheckSquare className="w-8 h-8 text-amber-400"/></div>
+                                            <div><h3 className="font-black text-white text-xl">Commissioning Réseaux Gaz</h3><p className="text-sm text-slate-400 mt-2 font-medium">Canevas numérique de mise en gaz, essais d'étanchéité, résistance et réglage de la détente.</p></div>
+                                        </div>
+                                    </div>
+                                    
+                                    {/* SIGNATURE VISIBLE SUR LE DASHBOARD MOBILE ÉGALEMENT */}
+                                    <div className="lg:hidden mt-10 text-center border-t border-slate-700/50 pt-6 pb-4">
+                                        <p className="text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">Plateforme réalisée par</p>
+                                        <p className="text-sm font-bold text-orange-400">MR. HAKMI ABDELKRIM</p>
+                                        <p className="text-[10px] text-slate-500 mt-0.5">INGÉNIEUR ÉTUDES - SONELGAZ STOS/DIST ORAN</p>
+                                    </div>
                                 </div>
-                                <div class="text-right"><div class="text-3xl font-black ${cand.percentage >= 80 ? 'text-green-600' : 'text-red-600'}">${cand.percentage}%</div><div class="text-xs text-slate-400">${cand.score}/${cand.total}</div></div>
-                            </div>
-                            <div class="grid grid-cols-3 gap-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-lg border">
-                                <div><strong>Matricule:</strong><br>${cand.matricule}</div>
-                                <div><strong>District:</strong><br>${cand.district}</div>
-                                <div><strong>Temps:</strong><br>${timeStr}</div>
-                            </div>
+                            )}
+
+                            {activeTab === 'quiz' && <QuizModule />}
+                            {activeTab === 'calc' && <div className="animate-fadeIn pb-10"><GasCalcModule /></div>}
+                            {activeTab === 'check' && <div className="animate-fadeIn pb-10"><ChecklistModule /></div>}
+
                         </div>
-                        <div><h3 class="text-lg font-bold mb-3"><i class="fas fa-list-check text-sonelgaz-blue mr-2"></i> Détail des réponses</h3><div class="space-y-2">${detailsHtml}</div></div>
                     </div>
                 </div>
-            `;
-        }
+            );
+        };
 
-        window.renderAIAnalysisPage = function(idx) {
-            const cand = window.allCandidatesResults[idx];
-            appContainer.innerHTML = `
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden fade-in border border-slate-200 min-h-[70vh] flex flex-col items-center justify-center p-10">
-                    <div class="text-sonelgaz-blue text-6xl mb-6"><i class="fas fa-brain animate-pulse"></i></div>
-                    <h2 class="text-2xl font-bold text-slate-800 mb-2">Génération de l'expertise IA en cours...</h2>
-                    <p class="text-slate-500 mb-8 text-center max-w-lg">L'Intelligence Artificielle analyse les erreurs de ${cand.nom} spécifiques à sa spécialité (${cand.service}) pour rédiger un rapport détaillé.</p>
-                    <div class="w-64 bg-slate-200 rounded-full h-2 overflow-hidden relative"><div class="bg-sonelgaz-orange h-2 absolute w-1/2 rounded-full animate-[progress_1.5s_ease-in-out_infinite]"></div></div>
-                </div>
-            `;
-
-            setTimeout(() => {
-                let erreursHtml = ''; let risquesArray = []; let nbErrors = 0;
-                cand.answers.forEach(a => {
-                    if (!a.isCorrect && a.selected !== -1) {
-                        nbErrors++; const q = cand.testSnapshot[a.questionIndex];
-                        erreursHtml += `<li><strong>Faiblesse en [${q.theme}] :</strong> Le candidat a choisi "${q.options[a.selected]}" au lieu de la procédure stricte ("${q.options[q.correctIndex]}").</li>`;
-                        if(q.theme.includes("SF6") || q.theme.includes("Transformateur") || q.theme.includes("Buchholz") || q.theme.includes("OLTC")) risquesArray.push("Risque matériel majeur (Explosion de cuve, Incendie des huiles).");
-                        if(q.theme.includes("Consignation") || q.theme.includes("MALT") || q.theme.includes("Tension de Pas")) risquesArray.push("Risque mortel d'électrocution pour le personnel (Réalimentation accidentelle, gradient de tension).");
-                        if(q.theme.includes("Protection") || q.theme.includes("Relais") || q.theme.includes("Injection") || q.theme.includes("SCADA") || q.theme.includes("Télécom") || q.theme.includes("Réseaux")) risquesArray.push("Risque de perte totale de visibilité (Blind) ou de contrôle du poste menant au black-out complet.");
-                        if(q.theme.includes("Hauteur") || q.theme.includes("Point Mort") || q.theme.includes("Harnais")) risquesArray.push("Risque mortel de chute de grande hauteur lié au non-respect de l'ancrage 100%.");
-                        if(q.theme.includes("Lavage") || q.theme.includes("Téléphone") || q.theme.includes("VLAN")) risquesArray.push("Risque de cyberattaque ou d'arc électrique à distance par négligence des protocoles.");
-                    }
-                });
-
-                let htmlContent = nbErrors === 0 
-                    ? `<p><strong>Le candidat a obtenu un excellent score.</strong> Aucune faille technique majeure détectée.</p>`
-                    : `<h3>1. Résumé</h3><p>Le candidat a obtenu <strong>${cand.percentage}%</strong>. L'analyse révèle des lacunes sur ${nbErrors} point(s).</p>
-                       <h3>2. Lacunes Techniques</h3><ul>${erreursHtml}</ul>
-                       <h3>3. Risques Terrain / Cybersécurité</h3><ul>${[...new Set(risquesArray)].map(r=>`<li>${r}</li>`).join('')}</ul>
-                       <h3>4. Recommandations</h3><ul><li>Un recyclage ciblé sur (${cand.service}) est indispensable avant toute manœuvre complexe.</li></ul>`;
-
-                appContainer.innerHTML = `
-                    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl overflow-hidden fade-in border border-slate-200 flex flex-col h-[85vh]">
-                        <div class="bg-slate-900 p-6 flex justify-between items-center text-white border-b-4 border-sonelgaz-blue shrink-0">
-                            <div class="flex items-center gap-3"><i class="fas fa-robot text-sonelgaz-blue text-3xl"></i><div><h2 class="text-xl font-bold">Rapport d'Expertise IA</h2><p class="text-sm text-slate-400">Pour ${cand.nom} ${cand.prenom}</p></div></div>
-                            <div class="flex gap-3">
-                                <button onclick="window.print()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-xl text-sm font-bold"><i class="fas fa-print mr-2"></i> Imprimer</button>
-                                <button onclick="window.viewCandidateDetailsAdmin(${idx})" class="bg-sonelgaz-orange hover:bg-orange-600 px-4 py-2 rounded-xl text-sm font-bold"><i class="fas fa-arrow-left mr-2"></i> Retour</button>
-                            </div>
-                        </div>
-                        <div class="p-8 overflow-y-auto flex-grow bg-slate-50"><div class="bg-white p-8 rounded-xl shadow-sm border ai-report text-slate-800">${htmlContent}</div></div>
-                    </div>`;
-            }, 1000); 
-        }
-
-        renderIntro();
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
